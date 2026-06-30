@@ -14,7 +14,8 @@ import {
   LogOut,
   Map,
   Truck,
-  UserMinus
+  UserMinus,
+  PieChart
 } from 'lucide-react';
 
 const navItems = [
