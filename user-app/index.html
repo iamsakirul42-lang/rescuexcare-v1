@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>rescueX — Roadside Assistance</title>
+  <meta name="description" content="On-demand roadside assistance for bikes, cars, autos, and trucks. Get help fast with rescueX.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/design-tokens.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="mobile-frame" id="app">
+
+    <!-- =============== SPLASH SCREEN =============== -->
+    <section class="screen active" id="splash-screen">
+      <div class="splash-content">
+        <div class="splash-logo">
+          <svg class="logo-svg" viewBox="0 0 280 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="0" y="48" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#1A1A1A" letter-spacing="-2">rescue</text>
+            <text x="195" y="48" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#F97316" letter-spacing="-2">X</text>
+          </svg>
+        </div>
+        <div class="splash-tagline">Roadside help, anytime.</div>
+        <div class="splash-loader">
+          <div class="loader-bar"><div class="loader-fill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== ONBOARDING =============== -->
+    <section class="screen" id="onboarding-screen">
+      <div class="onboarding-wrapper">
+        <div class="onboarding-slides" id="onboarding-slides">
+          <div class="onboarding-slide active">
+            <div class="slide-illustration">
+              <div class="illustration-circle">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="#F97316" stroke-width="2.5" stroke-dasharray="6 4"/><path d="M28 45c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="28" r="4" fill="#F97316"/><path d="M40 50v6M34 56h12" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <h2 class="slide-title">Stuck on the road?</h2>
+            <p class="slide-desc">Get instant roadside assistance from verified mechanics near you.</p>
+          </div>
+          <div class="onboarding-slide">
+            <div class="slide-illustration">
+              <div class="illustration-circle">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><rect x="20" y="15" width="40" height="50" rx="6" stroke="#F97316" stroke-width="2.5"/><circle cx="40" cy="40" r="10" stroke="#1A1A1A" stroke-width="2"/><path d="M40 34v6l4 4" stroke="#F97316" stroke-width="2" stroke-linecap="round"/><circle cx="40" cy="40" r="2" fill="#F97316"/></svg>
+              </div>
+            </div>
+            <h2 class="slide-title">Track in real-time</h2>
+            <p class="slide-desc">Watch your mechanic arrive live on the map with accurate ETA.</p>
+          </div>
+          <div class="onboarding-slide">
+            <div class="slide-illustration">
+              <div class="illustration-circle">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><path d="M20 55l10-20 10 10 10-15 10 25" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="25" r="8" stroke="#1A1A1A" stroke-width="2"/><path d="M25 22v6M22 25h6" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <h2 class="slide-title">Pay securely</h2>
+            <p class="slide-desc">Multiple payment options. Transparent pricing. No hidden charges.</p>
+          </div>
+        </div>
+        <div class="onboarding-dots" id="onboarding-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <button class="btn-primary btn-full" id="onboarding-next-btn">Get Started</button>
+        <button class="btn-text" id="onboarding-skip-btn">Skip</button>
+      </div>
+    </section>
+
+    <!-- =============== AUTH SCREEN =============== -->
+    <section class="screen" id="auth-screen">
+      <div class="auth-wrapper">
+        <button class="btn-icon back-btn" id="auth-back-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="auth-header">
+          <h1 class="auth-title">Welcome to rescueX</h1>
+          <p class="auth-subtitle">Enter your phone number to continue</p>
+        </div>
+        <div class="auth-form" id="auth-phone-form">
+          <div class="input-group">
+            <div class="phone-input-wrapper">
+              <span class="country-code">+91</span>
+              <input type="tel" id="phone-input" class="input-phone" placeholder="Enter phone number" maxlength="10" autocomplete="tel">
+            </div>
+          </div>
+          <button class="btn-primary btn-full" id="send-otp-btn" disabled>Send OTP</button>
+        </div>
+        <div class="auth-form hidden" id="auth-otp-form">
+          <p class="otp-sent-text">OTP sent to <span id="otp-phone-display"></span></p>
+          <div class="otp-inputs" id="otp-inputs">
+            <input type="text" maxlength="1" class="otp-box" data-index="0" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-box" data-index="1" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-box" data-index="2" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-box" data-index="3" inputmode="numeric">
+          </div>
+          <button class="btn-primary btn-full" id="verify-otp-btn" disabled>Verify & Continue</button>
+          <div class="resend-row">
+            <span class="resend-timer" id="resend-timer">Resend OTP in 30s</span>
+            <button class="btn-text hidden" id="resend-btn">Resend OTP</button>
+          </div>
+        </div>
+        <p class="auth-terms">By continuing, you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a></p>
+      </div>
+    </section>
+
+    <!-- =============== HOME DASHBOARD =============== -->
+    <section class="screen" id="home-screen">
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="status-time" id="status-time">10:05</span>
+        <div class="status-icons">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1A1A1A"><rect x="17" y="4" width="4" height="16" rx="1"/><rect x="11" y="8" width="4" height="12" rx="1"/><rect x="5" y="12" width="4" height="8" rx="1"/></svg>
+          <span class="battery-icon">🔋</span>
+        </div>
+      </div>
+
+      <!-- Top Bar -->
+      <div class="home-topbar">
+        <div class="location-bar" id="location-bar">
+          <div class="location-pin">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#F97316"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
+          </div>
+          <div class="location-text">
+            <span class="location-label">Your Location</span>
+            <span class="location-address" id="user-location">MG Road, Bangalore</span>
+          </div>
+          <svg class="location-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <button class="btn-icon notification-btn" id="home-notif-btn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="#1A1A1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="notif-badge">3</span>
+        </button>
+      </div>
+
+      <!-- Map Placeholder -->
+      <div class="home-map" id="home-map">
+        <div class="map-placeholder">
+          <div class="map-grid"></div>
+          <div class="map-pin-center">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#F97316"/><circle cx="12" cy="9" r="3" fill="#fff"/></svg>
+          </div>
+          <div class="map-mechanic-dot dot-1"></div>
+          <div class="map-mechanic-dot dot-2"></div>
+          <div class="map-mechanic-dot dot-3"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Sheet -->
+      <div class="home-bottom-sheet" id="home-bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2 class="sheet-title">What do you need help with?</h2>
+        
+        <!-- Vehicle Type Cards -->
+        <div class="vehicle-grid" id="vehicle-grid">
+          <div class="vehicle-card" data-vehicle="bike">
+            <div class="vehicle-icon-wrap">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="18" r="3" stroke="#1A1A1A" stroke-width="1.5"/><circle cx="19" cy="18" r="3" stroke="#1A1A1A" stroke-width="1.5"/><path d="M5 18l3-8h4l3 5h4" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10l2-4h3" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <span class="vehicle-label">Bike</span>
+          </div>
+          <div class="vehicle-card" data-vehicle="car">
+            <div class="vehicle-icon-wrap">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="17" r="1.5" fill="#F97316"/><circle cx="15.5" cy="17" r="1.5" fill="#F97316"/><path d="M7 10h10" stroke="#1A1A1A" stroke-width="1.5"/></svg>
+            </div>
+            <span class="vehicle-label">Car</span>
+          </div>
+          <div class="vehicle-card" data-vehicle="auto">
+            <div class="vehicle-icon-wrap">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 17h16M6 17V10l3-4h3v11" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6h5l3 4v7" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="17" r="2" fill="#F97316"/><circle cx="18" cy="17" r="2" fill="#1A1A1A"/></svg>
+            </div>
+            <span class="vehicle-label">Auto</span>
+          </div>
+          <div class="vehicle-card" data-vehicle="truck">
+            <div class="vehicle-icon-wrap">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="12" height="9" rx="1" stroke="#1A1A1A" stroke-width="1.5"/><path d="M15 11h4l2 3v3h-6v-6z" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="17" r="2" fill="#F97316"/><circle cx="17.5" cy="17" r="2" fill="#1A1A1A"/></svg>
+            </div>
+            <span class="vehicle-label">Truck</span>
+          </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="section-header">
+          <h3 class="section-title">Recent Bookings</h3>
+          <button class="btn-text-sm" id="view-all-bookings">View All</button>
+        </div>
+        <div class="recent-bookings" id="recent-bookings">
+          <div class="booking-card-mini">
+            <div class="booking-mini-icon car-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="booking-mini-info">
+              <span class="booking-mini-title">Flat Tire Fix — Car</span>
+              <span class="booking-mini-date">Jun 24, 2026 • ₹349</span>
+            </div>
+            <span class="booking-status-badge completed">Completed</span>
+          </div>
+          <div class="booking-card-mini">
+            <div class="booking-mini-icon bike-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="18" r="3" stroke="#F97316" stroke-width="1.5"/><circle cx="19" cy="18" r="3" stroke="#F97316" stroke-width="1.5"/><path d="M5 18l3-8h4l3 5h4" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="booking-mini-info">
+              <span class="booking-mini-title">Battery Jump — Bike</span>
+              <span class="booking-mini-date">Jun 20, 2026 • ₹199</span>
+            </div>
+            <span class="booking-status-badge completed">Completed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Nav -->
+      <nav class="bottom-nav" id="bottom-nav-user">
+        <button class="nav-item active" data-tab="home">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1m-2 0h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" data-tab="bookings">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Bookings</span>
+        </button>
+        <button class="nav-item" data-tab="notifications">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Alerts</span>
+        </button>
+        <button class="nav-item" data-tab="profile">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Profile</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- =============== VEHICLE SELECTION =============== -->
+    <section class="screen" id="vehicle-select-screen">
+      <div class="screen-header">
+        <button class="btn-icon back-btn" data-back="home-screen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1 class="header-title">Select Vehicle</h1>
+        <div class="header-spacer"></div>
+      </div>
+      <div class="screen-body">
+        <p class="body-subtitle">What vehicle needs assistance?</p>
+        <div class="vehicle-select-list">
+          <div class="vehicle-select-card" data-vehicle="bike">
+            <div class="vs-icon">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="18" r="3" stroke="#F97316" stroke-width="1.5"/><circle cx="19" cy="18" r="3" stroke="#F97316" stroke-width="1.5"/><path d="M5 18l3-8h4l3 5h4" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10l2-4h3" stroke="#F97316" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="vs-info">
+              <span class="vs-name">Bike</span>
+              <span class="vs-desc">Motorcycles & Scooters</span>
+            </div>
+            <span class="vs-price">from ₹149</span>
+            <svg class="vs-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="vehicle-select-card" data-vehicle="car">
+            <div class="vs-icon">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="17" r="1.5" fill="#F97316"/><circle cx="15.5" cy="17" r="1.5" fill="#F97316"/><path d="M7 10h10" stroke="#1A1A1A" stroke-width="1.5"/></svg>
+            </div>
+            <div class="vs-info">
+              <span class="vs-name">Car</span>
+              <span class="vs-desc">Hatchback, Sedan, SUV</span>
+            </div>
+            <span class="vs-price">from ₹249</span>
+            <svg class="vs-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="vehicle-select-card" data-vehicle="auto">
+            <div class="vs-icon">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><path d="M4 17h16M6 17V10l3-4h3v11" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6h5l3 4v7" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="17" r="2" fill="#F97316"/><circle cx="18" cy="17" r="2" fill="#1A1A1A"/></svg>
+            </div>
+            <div class="vs-info">
+              <span class="vs-name">Auto</span>
+              <span class="vs-desc">Auto Rickshaw</span>
+            </div>
+            <span class="vs-price">from ₹199</span>
+            <svg class="vs-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="vehicle-select-card" data-vehicle="truck">
+            <div class="vs-icon">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="12" height="9" rx="1" stroke="#1A1A1A" stroke-width="1.5"/><path d="M15 11h4l2 3v3h-6v-6z" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="17" r="2" fill="#F97316"/><circle cx="17.5" cy="17" r="2" fill="#1A1A1A"/></svg>
+            </div>
+            <div class="vs-info">
+              <span class="vs-name">Truck</span>
+              <span class="vs-desc">Light & Heavy Commercial</span>
+            </div>
+            <span class="vs-price">from ₹499</span>
+            <svg class="vs-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== BOOK ASSISTANCE =============== -->
+    <section class="screen" id="book-screen">
+      <div class="screen-header">
+        <button class="btn-icon back-btn" data-back="vehicle-select-screen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1 class="header-title">Book Assistance</h1>
+        <div class="header-spacer"></div>
+      </div>
+      <div class="screen-body">
+        <div class="selected-vehicle-chip" id="selected-vehicle-chip">
+          <span class="chip-icon">🚗</span>
+          <span class="chip-label">Car</span>
+          <button class="chip-change" id="change-vehicle-btn">Change</button>
+        </div>
+
+        <h3 class="form-section-title">What's the issue?</h3>
+        <div class="issue-grid" id="issue-grid">
+          <button class="issue-chip" data-issue="flat-tire">
+            <span class="issue-emoji">🛞</span>
+            <span>Flat Tire</span>
+          </button>
+          <button class="issue-chip" data-issue="engine">
+            <span class="issue-emoji">⚙️</span>
+            <span>Engine Issue</span>
+          </button>
+          <button class="issue-chip" data-issue="battery">
+            <span class="issue-emoji">🔋</span>
+            <span>Battery Dead</span>
+          </button>
+          <button class="issue-chip" data-issue="towing">
+            <span class="issue-emoji">🚛</span>
+            <span>Towing</span>
+          </button>
+          <button class="issue-chip" data-issue="fuel">
+            <span class="issue-emoji">⛽</span>
+            <span>Out of Fuel</span>
+          </button>
+          <button class="issue-chip" data-issue="lockout">
+            <span class="issue-emoji">🔑</span>
+            <span>Key Lockout</span>
+          </button>
+          <button class="issue-chip" data-issue="overheating">
+            <span class="issue-emoji">🌡️</span>
+            <span>Overheating</span>
+          </button>
+          <button class="issue-chip" data-issue="other">
+            <span class="issue-emoji">🔧</span>
+            <span>Other</span>
+          </button>
+        </div>
+
+        <h3 class="form-section-title">Your Location</h3>
+        <div class="location-confirm-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#F97316"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
+          <span class="location-confirm-text">MG Road, Bangalore, KA 560001</span>
+          <button class="btn-text-sm">Edit</button>
+        </div>
+
+        <h3 class="form-section-title">Additional Notes</h3>
+        <textarea class="notes-input" id="booking-notes" placeholder="Describe the issue briefly (optional)..." rows="3"></textarea>
+
+        <div class="price-estimate-card" id="price-estimate">
+          <div class="price-row">
+            <span>Estimated Cost</span>
+            <span class="price-value">₹249 – ₹399</span>
+          </div>
+          <div class="price-row small">
+            <span>Includes inspection + basic fix</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6B7280" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-full btn-lg" id="confirm-booking-btn">
+          <span>Book Now</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- =============== LIVE TRACKING =============== -->
+    <section class="screen" id="tracking-screen">
+      <div class="tracking-map-area">
+        <div class="map-placeholder tracking-map">
+          <div class="map-grid"></div>
+          <div class="tracking-route-line"></div>
+          <div class="mechanic-marker">
+            <div class="mechanic-marker-dot"></div>
+            <div class="mechanic-marker-pulse"></div>
+          </div>
+          <div class="user-marker">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#F97316"/><circle cx="12" cy="9" r="3" fill="#fff"/></svg>
+          </div>
+        </div>
+        <button class="btn-icon map-back-btn" id="tracking-back-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="tracking-bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="tracking-eta">
+          <div class="eta-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#F97316" stroke-width="2"/><path d="M12 6v6l4 2" stroke="#F97316" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>Arriving in <strong>8 min</strong></span>
+          </div>
+          <span class="eta-distance">2.3 km away</span>
+        </div>
+
+        <div class="mechanic-info-card">
+          <div class="mechanic-avatar">
+            <div class="avatar-circle">RS</div>
+          </div>
+          <div class="mechanic-details">
+            <span class="mechanic-name">Rajesh Sharma</span>
+            <div class="mechanic-rating">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F97316"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>4.8</span>
+              <span class="rating-count">(234 jobs)</span>
+            </div>
+          </div>
+          <div class="mechanic-actions">
+            <button class="btn-icon-sm call-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn-icon-sm chat-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="tracking-status-steps">
+          <div class="status-step completed">
+            <div class="step-dot"></div>
+            <span>Request Accepted</span>
+            <span class="step-time">10:02 AM</span>
+          </div>
+          <div class="status-step active">
+            <div class="step-dot"></div>
+            <span>En Route to You</span>
+            <span class="step-time">Now</span>
+          </div>
+          <div class="status-step">
+            <div class="step-dot"></div>
+            <span>Arrived</span>
+          </div>
+          <div class="status-step">
+            <div class="step-dot"></div>
+            <span>Work in Progress</span>
+          </div>
+          <div class="status-step">
+            <div class="step-dot"></div>
+            <span>Completed</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== BOOKING STATUS =============== -->
+    <section class="screen" id="booking-status-screen">
+      <div class="screen-header">
+        <button class="btn-icon back-btn" data-back="home-screen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1 class="header-title">Booking Status</h1>
+        <div class="header-spacer"></div>
+      </div>
+      <div class="screen-body center-content">
+        <div class="status-animation" id="searching-animation">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring delay-1"></div>
+          <div class="pulse-ring delay-2"></div>
+          <div class="search-icon-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#F97316" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#F97316" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <h2 class="status-main-text">Finding nearby mechanics...</h2>
+        <p class="status-sub-text">This usually takes 30-60 seconds</p>
+
+        <div class="status-progress-bar">
+          <div class="progress-steps">
+            <div class="p-step active">
+              <div class="p-dot"></div>
+              <span>Searching</span>
+            </div>
+            <div class="p-line"></div>
+            <div class="p-step">
+              <div class="p-dot"></div>
+              <span>Assigned</span>
+            </div>
+            <div class="p-line"></div>
+            <div class="p-step">
+              <div class="p-dot"></div>
+              <span>En Route</span>
+            </div>
+            <div class="p-line"></div>
+            <div class="p-step">
+              <div class="p-dot"></div>
+              <span>Arrived</span>
+            </div>
+            <div class="p-line"></div>
+            <div class="p-step">
+              <div class="p-dot"></div>
+              <span>Done</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-outline btn-full" id="cancel-booking-btn">Cancel Request</button>
+      </div>
+    </section>
+
+    <!-- =============== PAYMENT =============== -->
+    <section class="screen" id="payment-screen">
+      <div class="screen-header">
+        <button class="btn-icon back-btn" data-back="home-screen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1 class="header-title">Payment</h1>
+        <div class="header-spacer"></div>
+      </div>
+      <div class="screen-body">
+        <div class="payment-success-badge">
+          <div class="success-check">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#22C55E"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h2>Service Completed!</h2>
+          <p class="payment-booking-id">Booking #RX20260627</p>
+        </div>
+
+        <div class="payment-summary-card">
+          <h3 class="payment-card-title">Payment Summary</h3>
+          <div class="payment-row">
+            <span>Service Charge</span>
+            <span>₹299</span>
+          </div>
+          <div class="payment-row">
+            <span>Parts (Tube replacement)</span>
+            <span>₹150</span>
+          </div>
+          <div class="payment-row">
+            <span>Platform Fee</span>
+            <span>₹20</span>
+          </div>
+          <div class="payment-row">
+            <span>Tax (GST 18%)</span>
+            <span>₹84</span>
+          </div>
+          <div class="payment-divider"></div>
+          <div class="payment-row total">
+            <span>Total</span>
+            <span>₹553</span>
+          </div>
+        </div>
+
+        <h3 class="form-section-title">Pay via</h3>
+        <div class="payment-methods" id="payment-methods">
+          <label class="payment-method-card active">
+            <input type="radio" name="payment" value="upi" checked>
+            <div class="pm-radio"></div>
+            <div class="pm-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="#1A1A1A" stroke-width="1.5"/><path d="M7 15l3-6 3 4 4-7" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="pm-label">UPI</span>
+          </label>
+          <label class="payment-method-card">
+            <input type="radio" name="payment" value="card">
+            <div class="pm-radio"></div>
+            <div class="pm-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#1A1A1A" stroke-width="1.5"/><path d="M2 10h20" stroke="#1A1A1A" stroke-width="1.5"/></svg>
+            </div>
+            <span class="pm-label">Debit/Credit Card</span>
+          </label>
+          <label class="payment-method-card">
+            <input type="radio" name="payment" value="cash">
+            <div class="pm-radio"></div>
+            <div class="pm-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="2" stroke="#1A1A1A" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#F97316" stroke-width="1.5"/></svg>
+            </div>
+            <span class="pm-label">Cash</span>
+          </label>
+        </div>
+
+        <button class="btn-primary btn-full btn-lg" id="pay-now-btn">Pay ₹553</button>
+
+        <div class="rate-mechanic-card hidden" id="rate-mechanic-card">
+          <h3>Rate your mechanic</h3>
+          <p>How was Rajesh Sharma?</p>
+          <div class="star-rating" id="star-rating">
+            <button class="star" data-star="1">★</button>
+            <button class="star" data-star="2">★</button>
+            <button class="star" data-star="3">★</button>
+            <button class="star" data-star="4">★</button>
+            <button class="star" data-star="5">★</button>
+          </div>
+          <button class="btn-primary btn-full" id="submit-rating-btn">Submit Rating</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== BOOKING HISTORY =============== -->
+    <section class="screen" id="bookings-screen">
+      <div class="screen-header no-back">
+        <h1 class="header-title">My Bookings</h1>
+      </div>
+      <div class="screen-body">
+        <div class="tab-bar" id="bookings-tabs">
+          <button class="tab active" data-tab="upcoming">Upcoming</button>
+          <button class="tab" data-tab="past">Past</button>
+        </div>
+
+        <div class="tab-content active" id="tab-upcoming">
+          <div class="booking-card">
+            <div class="bc-header">
+              <span class="bc-id">#RX20260627</span>
+              <span class="booking-status-badge in-progress">In Progress</span>
+            </div>
+            <div class="bc-body">
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Car — Flat Tire</span>
+              </div>
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#6B7280" stroke-width="1.5"/></svg>
+                <span>MG Road, Bangalore</span>
+              </div>
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6B7280" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Today, 10:05 AM</span>
+              </div>
+            </div>
+            <div class="bc-footer">
+              <span class="bc-price">₹349</span>
+              <button class="btn-sm btn-accent" id="track-booking-btn">Track</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-past">
+          <div class="booking-card">
+            <div class="bc-header">
+              <span class="bc-id">#RX20260624</span>
+              <span class="booking-status-badge completed">Completed</span>
+            </div>
+            <div class="bc-body">
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Car — Engine Issue</span>
+              </div>
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6B7280" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Jun 24, 2026 • 3:30 PM</span>
+              </div>
+            </div>
+            <div class="bc-footer">
+              <span class="bc-price">₹799</span>
+              <button class="btn-sm btn-outline-sm">Rebook</button>
+            </div>
+          </div>
+          <div class="booking-card">
+            <div class="bc-header">
+              <span class="bc-id">#RX20260620</span>
+              <span class="booking-status-badge completed">Completed</span>
+            </div>
+            <div class="bc-body">
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="18" r="3" stroke="#6B7280" stroke-width="1.5"/><circle cx="19" cy="18" r="3" stroke="#6B7280" stroke-width="1.5"/><path d="M5 18l3-8h4l3 5h4" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Bike — Battery Dead</span>
+              </div>
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6B7280" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Jun 20, 2026 • 11:15 AM</span>
+              </div>
+            </div>
+            <div class="bc-footer">
+              <span class="bc-price">₹199</span>
+              <button class="btn-sm btn-outline-sm">Rebook</button>
+            </div>
+          </div>
+          <div class="booking-card">
+            <div class="bc-header">
+              <span class="bc-id">#RX20260615</span>
+              <span class="booking-status-badge cancelled">Cancelled</span>
+            </div>
+            <div class="bc-body">
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Car — Towing</span>
+              </div>
+              <div class="bc-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6B7280" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Jun 15, 2026 • 7:45 PM</span>
+              </div>
+            </div>
+            <div class="bc-footer">
+              <span class="bc-price">₹0</span>
+              <button class="btn-sm btn-outline-sm">Rebook</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="bottom-nav" id="bottom-nav-bookings">
+        <button class="nav-item" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1m-2 0h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></button>
+        <button class="nav-item active" data-tab="bookings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Bookings</span></button>
+        <button class="nav-item" data-tab="notifications"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Alerts</span></button>
+        <button class="nav-item" data-tab="profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Profile</span></button>
+      </nav>
+    </section>
+
+    <!-- =============== NOTIFICATIONS =============== -->
+    <section class="screen" id="notifications-screen">
+      <div class="screen-header no-back">
+        <h1 class="header-title">Notifications</h1>
+      </div>
+      <div class="screen-body">
+        <div class="notif-group">
+          <span class="notif-group-label">Today</span>
+          <div class="notif-card unread">
+            <div class="notif-icon accent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#F97316" stroke-width="1.8"/></svg>
+            </div>
+            <div class="notif-content">
+              <span class="notif-title">Mechanic Assigned</span>
+              <span class="notif-desc">Rajesh Sharma is on the way to your location</span>
+              <span class="notif-time">2 min ago</span>
+            </div>
+          </div>
+          <div class="notif-card unread">
+            <div class="notif-icon success">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="1.8"/><path d="M8 12l3 3 5-6" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="notif-content">
+              <span class="notif-title">Booking Confirmed</span>
+              <span class="notif-desc">Your booking #RX20260627 has been confirmed</span>
+              <span class="notif-time">5 min ago</span>
+            </div>
+          </div>
+          <div class="notif-card">
+            <div class="notif-icon info">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#3B82F6" stroke-width="1.8"/><path d="M12 16v-4M12 8h.01" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <div class="notif-content">
+              <span class="notif-title">Service Update</span>
+              <span class="notif-desc">We've expanded our services to include AC repair!</span>
+              <span class="notif-time">1 hour ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="notif-group">
+          <span class="notif-group-label">Yesterday</span>
+          <div class="notif-card">
+            <div class="notif-icon success">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="1.8"/><path d="M8 12l3 3 5-6" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="notif-content">
+              <span class="notif-title">Payment Received</span>
+              <span class="notif-desc">₹349 paid for booking #RX20260624</span>
+              <span class="notif-time">Yesterday, 4:15 PM</span>
+            </div>
+          </div>
+          <div class="notif-card">
+            <div class="notif-icon warning">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#F59E0B" stroke-width="1.8"/><path d="M12 9v4M12 17h.01" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <div class="notif-content">
+              <span class="notif-title">Rate Your Experience</span>
+              <span class="notif-desc">Don't forget to rate your recent service with Rajesh</span>
+              <span class="notif-time">Yesterday, 3:35 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="bottom-nav" id="bottom-nav-notif">
+        <button class="nav-item" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1m-2 0h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></button>
+        <button class="nav-item" data-tab="bookings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Bookings</span></button>
+        <button class="nav-item active" data-tab="notifications"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Alerts</span></button>
+        <button class="nav-item" data-tab="profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Profile</span></button>
+      </nav>
+    </section>
+
+    <!-- =============== PROFILE & SETTINGS =============== -->
+    <section class="screen" id="profile-screen">
+      <div class="screen-header no-back">
+        <h1 class="header-title">Profile</h1>
+      </div>
+      <div class="screen-body">
+        <div class="profile-header-card">
+          <div class="profile-avatar">
+            <div class="avatar-large">AK</div>
+            <button class="avatar-edit-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <h2 class="profile-name">Arun Kumar</h2>
+          <p class="profile-phone">+91 98765 43210</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#6B7280" stroke-width="1.8"/></svg>
+            </div>
+            <span class="settings-label">Edit Profile</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 17h14M7 17V9.5L9 6h6l2 3.5V17" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="settings-label">My Vehicles</span>
+            <span class="settings-value">2 saved</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#6B7280" stroke-width="1.8"/><circle cx="12" cy="9" r="2.5" stroke="#6B7280" stroke-width="1.8"/></svg>
+            </div>
+            <span class="settings-label">Saved Addresses</span>
+            <span class="settings-value">3 saved</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#6B7280" stroke-width="1.8"/><path d="M2 10h20" stroke="#6B7280" stroke-width="1.8"/></svg>
+            </div>
+            <span class="settings-label">Payment Methods</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9z" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="settings-label">Notification Settings</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="#6B7280" stroke-width="1.8"/></svg>
+            </div>
+            <span class="settings-label">App Settings</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6B7280" stroke-width="1.8"/><path d="M12 16v-4M12 8h.01" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="settings-label">Help & Support</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="settings-label">Terms & Privacy</span>
+            <svg class="settings-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <button class="btn-outline btn-full btn-danger" id="logout-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Log Out
+        </button>
+        <p class="app-version">rescueX v1.0.0</p>
+      </div>
+      <nav class="bottom-nav" id="bottom-nav-profile">
+        <button class="nav-item" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1m-2 0h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></button>
+        <button class="nav-item" data-tab="bookings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Bookings</span></button>
+        <button class="nav-item" data-tab="notifications"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Alerts</span></button>
+        <button class="nav-item active" data-tab="profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Profile</span></button>
+      </nav>
+    </section>
+
+    <!-- =============== TOAST =============== -->
+    <div class="toast hidden" id="toast">
+      <span class="toast-icon"></span>
+      <span class="toast-message"></span>
+    </div>
+
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>

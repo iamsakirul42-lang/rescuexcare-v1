@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rescueX Admin — Dashboard</title>
+  <meta name="description" content="rescueX Admin Dashboard — Manage users, mechanics, bookings, payments, and platform settings.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/design-tokens.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="admin-app" id="admin-app">
+
+    <!-- =============== LOGIN =============== -->
+    <div class="login-page active" id="login-page">
+      <div class="login-card">
+        <div class="login-logo">
+          <svg viewBox="0 0 280 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="200">
+            <text x="0" y="48" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#1A1A1A" letter-spacing="-2">rescue</text>
+            <text x="195" y="48" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#F97316" letter-spacing="-2">X</text>
+          </svg>
+          <span class="login-badge">ADMIN PANEL</span>
+        </div>
+        <h1 class="login-title">Welcome back</h1>
+        <p class="login-subtitle">Sign in to manage your platform</p>
+        <form class="login-form" id="login-form">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="admin-email" placeholder="admin@rescuex.in" value="admin@rescuex.in">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="admin-password" placeholder="Enter password" value="admin123">
+          </div>
+          <div class="form-row">
+            <label class="checkbox-label"><input type="checkbox" checked> Remember me</label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-admin-primary btn-full">Sign In</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =============== MAIN LAYOUT =============== -->
+    <div class="admin-layout hidden" id="admin-layout">
+
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+          <svg viewBox="0 0 280 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="130">
+            <text x="0" y="48" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#1A1A1A" letter-spacing="-2">rescue</text>
+            <text x="195" y="48" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#F97316" letter-spacing="-2">X</text>
+          </svg>
+        </div>
+        <nav class="sidebar-nav">
+          <button class="sidebar-item active" data-page="dashboard">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span>Dashboard</span>
+          </button>
+          <button class="sidebar-item" data-page="users">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Users</span>
+          </button>
+          <button class="sidebar-item" data-page="mechanics">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Mechanics</span>
+          </button>
+          <button class="sidebar-item" data-page="kyc">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span>KYC</span>
+            <span class="sidebar-badge">5</span>
+          </button>
+          <button class="sidebar-item" data-page="bookings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Bookings</span>
+          </button>
+          <button class="sidebar-item" data-page="revenue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Revenue</span>
+          </button>
+          <button class="sidebar-item" data-page="services">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span>Services</span>
+          </button>
+          <button class="sidebar-item" data-page="notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Notifications</span>
+          </button>
+          <button class="sidebar-item" data-page="reviews">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Reviews</span>
+          </button>
+          <button class="sidebar-item" data-page="analytics">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Analytics</span>
+          </button>
+          <button class="sidebar-item" data-page="settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span>Settings</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="sidebar-item" id="admin-logout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content" id="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="btn-icon sidebar-toggle" id="sidebar-toggle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="breadcrumb" id="breadcrumb">
+              <span>Dashboard</span>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="topbar-search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#9CA3AF" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg>
+              <input type="text" placeholder="Search..." id="global-search">
+            </div>
+            <button class="btn-icon topbar-notif">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9z" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span class="topbar-badge">7</span>
+            </button>
+            <div class="topbar-profile">
+              <div class="topbar-avatar">A</div>
+              <span class="topbar-name">Admin</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- ============ PAGE: DASHBOARD ============ -->
+        <div class="page active" id="page-dashboard">
+          <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <span class="page-date" id="dashboard-date"></span>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon users"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/></svg></div>
+              <div class="kpi-info"><span class="kpi-value">12,458</span><span class="kpi-label">Total Users</span></div>
+              <span class="kpi-change positive">+12.5%</span>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon mechanics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="1.8"/></svg></div>
+              <div class="kpi-info"><span class="kpi-value">847</span><span class="kpi-label">Total Mechanics</span></div>
+              <span class="kpi-change positive">+8.2%</span>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bookings"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8"/></svg></div>
+              <div class="kpi-info"><span class="kpi-value">342</span><span class="kpi-label">Active Bookings</span></div>
+              <span class="kpi-change positive">+23.1%</span>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon revenue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+              <div class="kpi-info"><span class="kpi-value">₹4.2L</span><span class="kpi-label">Revenue Today</span></div>
+              <span class="kpi-change positive">+18.7%</span>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon pending"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.8"/></svg></div>
+              <div class="kpi-info"><span class="kpi-value">5</span><span class="kpi-label">Pending KYC</span></div>
+              <span class="kpi-change negative">Needs Action</span>
+            </div>
+          </div>
+
+          <div class="charts-row">
+            <div class="chart-card">
+              <h3 class="chart-title">Revenue Trend</h3>
+              <canvas id="revenue-chart" height="200"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Bookings by Vehicle</h3>
+              <canvas id="bookings-chart" height="200"></canvas>
+            </div>
+          </div>
+
+          <div class="activity-section">
+            <h3 class="section-title-lg">Live Activity</h3>
+            <div class="activity-feed" id="activity-feed">
+              <div class="activity-item"><span class="activity-dot green"></span><span>New booking #RX20260627 — Car, Flat Tire</span><span class="activity-time">Just now</span></div>
+              <div class="activity-item"><span class="activity-dot blue"></span><span>Mechanic Rajesh accepted job #RX20260627</span><span class="activity-time">2 min ago</span></div>
+              <div class="activity-item"><span class="activity-dot orange"></span><span>New user registered: Arun Kumar (+91 98765xxxxx)</span><span class="activity-time">5 min ago</span></div>
+              <div class="activity-item"><span class="activity-dot green"></span><span>Booking #RX20260626 completed — ₹499</span><span class="activity-time">12 min ago</span></div>
+              <div class="activity-item"><span class="activity-dot purple"></span><span>KYC submitted by mechanic Suresh M.</span><span class="activity-time">15 min ago</span></div>
+              <div class="activity-item"><span class="activity-dot green"></span><span>Payment ₹349 received for #RX20260625</span><span class="activity-time">20 min ago</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: USERS ============ -->
+        <div class="page" id="page-users">
+          <div class="page-header">
+            <h1 class="page-title">User Management</h1>
+            <div class="page-actions">
+              <button class="btn-admin-outline">Export CSV</button>
+              <button class="btn-admin-primary">+ Add User</button>
+            </div>
+          </div>
+          <div class="table-controls">
+            <div class="table-search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#9CA3AF" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg>
+              <input type="text" placeholder="Search users...">
+            </div>
+            <div class="table-filters">
+              <select class="filter-select"><option>All Status</option><option>Active</option><option>Blocked</option></select>
+              <select class="filter-select"><option>All Time</option><option>Today</option><option>This Week</option><option>This Month</option></select>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table" id="users-table">
+              <thead>
+                <tr><th>User</th><th>Phone</th><th>Joined</th><th>Bookings</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><div class="table-user"><div class="table-avatar">AK</div><span>Arun Kumar</span></div></td><td>+91 98765 43210</td><td>Jan 15, 2026</td><td>12</td><td><span class="status-pill active">Active</span></td><td><div class="table-actions"><button class="action-btn view" title="View">👁</button><button class="action-btn block" title="Block">🚫</button><button class="action-btn delete" title="Delete">🗑</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar">PS</div><span>Priya Singh</span></div></td><td>+91 87654 32109</td><td>Feb 20, 2026</td><td>8</td><td><span class="status-pill active">Active</span></td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button><button class="action-btn delete">🗑</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar">RV</div><span>Rahul Verma</span></div></td><td>+91 76543 21098</td><td>Mar 5, 2026</td><td>5</td><td><span class="status-pill active">Active</span></td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button><button class="action-btn delete">🗑</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar">SK</div><span>Sneha Kapoor</span></div></td><td>+91 65432 10987</td><td>Apr 12, 2026</td><td>3</td><td><span class="status-pill blocked">Blocked</span></td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn unblock">✅</button><button class="action-btn delete">🗑</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar">VR</div><span>Vikram Rao</span></div></td><td>+91 54321 09876</td><td>May 8, 2026</td><td>15</td><td><span class="status-pill active">Active</span></td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button><button class="action-btn delete">🗑</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar">MJ</div><span>Meera Joshi</span></div></td><td>+91 43210 98765</td><td>Jun 1, 2026</td><td>2</td><td><span class="status-pill active">Active</span></td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button><button class="action-btn delete">🗑</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-pagination">
+            <span class="pagination-info">Showing 1-6 of 12,458 users</span>
+            <div class="pagination-btns">
+              <button class="page-btn" disabled>← Prev</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span>...</span>
+              <button class="page-btn">2076</button>
+              <button class="page-btn">Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: MECHANICS ============ -->
+        <div class="page" id="page-mechanics">
+          <div class="page-header">
+            <h1 class="page-title">Mechanic Management</h1>
+            <div class="page-actions">
+              <button class="btn-admin-outline">Export CSV</button>
+            </div>
+          </div>
+          <div class="table-controls">
+            <div class="table-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#9CA3AF" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg><input type="text" placeholder="Search mechanics..."></div>
+            <div class="table-filters">
+              <select class="filter-select"><option>All KYC</option><option>Approved</option><option>Pending</option><option>Rejected</option></select>
+              <select class="filter-select"><option>All Status</option><option>Online</option><option>Offline</option></select>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Mechanic</th><th>Phone</th><th>KYC</th><th>Rating</th><th>Status</th><th>Jobs</th><th>Earnings</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><div class="table-user"><div class="table-avatar accent">RS</div><span>Rajesh Sharma</span></div></td><td>+91 98765 12345</td><td><span class="status-pill approved">Approved</span></td><td>⭐ 4.8</td><td><span class="online-dot online"></span> Online</td><td>234</td><td>₹1,24,500</td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar accent">SM</div><span>Suresh M.</span></div></td><td>+91 87654 11111</td><td><span class="status-pill pending-status">Pending</span></td><td>—</td><td><span class="online-dot offline"></span> Offline</td><td>0</td><td>₹0</td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn approve">✅</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar accent">KN</div><span>Kumar N.</span></div></td><td>+91 76543 22222</td><td><span class="status-pill approved">Approved</span></td><td>⭐ 4.5</td><td><span class="online-dot online"></span> Online</td><td>189</td><td>₹98,200</td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button></div></td></tr>
+                <tr><td><div class="table-user"><div class="table-avatar accent">PA</div><span>Pradeep A.</span></div></td><td>+91 65432 33333</td><td><span class="status-pill approved">Approved</span></td><td>⭐ 4.9</td><td><span class="online-dot offline"></span> Offline</td><td>312</td><td>₹1,65,800</td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn block">🚫</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-pagination">
+            <span class="pagination-info">Showing 1-4 of 847 mechanics</span>
+            <div class="pagination-btns"><button class="page-btn" disabled>← Prev</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">Next →</button></div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: KYC ============ -->
+        <div class="page" id="page-kyc">
+          <div class="page-header">
+            <h1 class="page-title">KYC Verification</h1>
+            <div class="kyc-stats-row">
+              <div class="kyc-stat"><span class="kyc-stat-num pending-num">5</span><span>Pending</span></div>
+              <div class="kyc-stat"><span class="kyc-stat-num approved-num">12</span><span>Approved Today</span></div>
+              <div class="kyc-stat"><span class="kyc-stat-num rejected-num">2</span><span>Rejected Today</span></div>
+            </div>
+          </div>
+          <div class="kyc-queue">
+            <div class="kyc-review-card">
+              <div class="kyc-review-header">
+                <div class="table-user"><div class="table-avatar accent">SM</div><div><span class="kyc-mech-name">Suresh Muthu</span><span class="kyc-mech-phone">+91 87654 11111</span></div></div>
+                <span class="status-pill pending-status">Pending Review</span>
+              </div>
+              <div class="kyc-docs-grid">
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>Aadhaar Card</span></div>
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>PAN Card</span></div>
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>Driving License</span></div>
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>Vehicle RC</span></div>
+              </div>
+              <div class="kyc-review-actions">
+                <button class="btn-admin-danger">Reject</button>
+                <button class="btn-admin-success">Approve</button>
+              </div>
+            </div>
+            <div class="kyc-review-card">
+              <div class="kyc-review-header">
+                <div class="table-user"><div class="table-avatar accent">RK</div><div><span class="kyc-mech-name">Ramesh Kumar</span><span class="kyc-mech-phone">+91 99887 76655</span></div></div>
+                <span class="status-pill pending-status">Pending Review</span>
+              </div>
+              <div class="kyc-docs-grid">
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>Aadhaar Card</span></div>
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>PAN Card</span></div>
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>Driving License</span></div>
+                <div class="kyc-doc-preview"><div class="doc-thumb">📄</div><span>Vehicle RC</span></div>
+              </div>
+              <div class="kyc-review-actions">
+                <button class="btn-admin-danger">Reject</button>
+                <button class="btn-admin-success">Approve</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: BOOKINGS ============ -->
+        <div class="page" id="page-bookings">
+          <div class="page-header">
+            <h1 class="page-title">Booking Management</h1>
+            <div class="page-actions">
+              <button class="btn-admin-outline">Export</button>
+            </div>
+          </div>
+          <div class="booking-status-tabs">
+            <button class="bs-tab active">All (1,247)</button>
+            <button class="bs-tab">Active (23)</button>
+            <button class="bs-tab">Completed (1,180)</button>
+            <button class="bs-tab">Cancelled (44)</button>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Booking ID</th><th>User</th><th>Mechanic</th><th>Vehicle</th><th>Issue</th><th>Status</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td class="id-cell">#RX20260627</td><td>Arun Kumar</td><td>Rajesh S.</td><td>Car</td><td>Flat Tire</td><td><span class="status-pill in-progress-status">In Progress</span></td><td>₹349</td><td>Today, 10:05</td><td><div class="table-actions"><button class="action-btn view">👁</button><button class="action-btn">↻</button></div></td></tr>
+                <tr><td class="id-cell">#RX20260627B</td><td>Priya Singh</td><td>Kumar N.</td><td>Bike</td><td>Battery</td><td><span class="status-pill completed-status">Completed</span></td><td>₹199</td><td>Today, 9:20</td><td><div class="table-actions"><button class="action-btn view">👁</button></div></td></tr>
+                <tr><td class="id-cell">#RX20260626</td><td>Rahul Verma</td><td>Pradeep A.</td><td>Car</td><td>Engine</td><td><span class="status-pill completed-status">Completed</span></td><td>₹499</td><td>Yesterday</td><td><div class="table-actions"><button class="action-btn view">👁</button></div></td></tr>
+                <tr><td class="id-cell">#RX20260625</td><td>Vikram R.</td><td>Rajesh S.</td><td>Auto</td><td>Towing</td><td><span class="status-pill completed-status">Completed</span></td><td>₹899</td><td>Jun 25</td><td><div class="table-actions"><button class="action-btn view">👁</button></div></td></tr>
+                <tr><td class="id-cell">#RX20260624</td><td>Meera J.</td><td>—</td><td>Car</td><td>Fuel</td><td><span class="status-pill cancelled-status">Cancelled</span></td><td>₹0</td><td>Jun 24</td><td><div class="table-actions"><button class="action-btn view">👁</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: REVENUE ============ -->
+        <div class="page" id="page-revenue">
+          <div class="page-header"><h1 class="page-title">Revenue & Payments</h1></div>
+          <div class="revenue-kpis">
+            <div class="rev-kpi"><span class="rev-kpi-label">Today</span><span class="rev-kpi-value">₹4,20,350</span></div>
+            <div class="rev-kpi"><span class="rev-kpi-label">This Week</span><span class="rev-kpi-value">₹28,45,200</span></div>
+            <div class="rev-kpi"><span class="rev-kpi-label">This Month</span><span class="rev-kpi-value">₹1,12,34,800</span></div>
+            <div class="rev-kpi"><span class="rev-kpi-label">Total Revenue</span><span class="rev-kpi-value">₹8,45,67,200</span></div>
+          </div>
+          <div class="charts-row">
+            <div class="chart-card"><h3 class="chart-title">Revenue Trend (30 Days)</h3><canvas id="revenue-trend-chart" height="220"></canvas></div>
+            <div class="chart-card"><h3 class="chart-title">Revenue by Vehicle Type</h3><canvas id="revenue-vehicle-chart" height="220"></canvas></div>
+          </div>
+          <div class="section-title-lg" style="margin-top:24px;">Recent Transactions</div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Transaction ID</th><th>User</th><th>Mechanic</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody>
+                <tr><td class="id-cell">TXN001</td><td>Arun Kumar</td><td>Rajesh S.</td><td>₹349</td><td>UPI</td><td><span class="status-pill completed-status">Success</span></td><td>Today</td></tr>
+                <tr><td class="id-cell">TXN002</td><td>Priya Singh</td><td>Kumar N.</td><td>₹199</td><td>Card</td><td><span class="status-pill completed-status">Success</span></td><td>Today</td></tr>
+                <tr><td class="id-cell">TXN003</td><td>Rahul Verma</td><td>Pradeep A.</td><td>₹499</td><td>Cash</td><td><span class="status-pill completed-status">Success</span></td><td>Yesterday</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: SERVICES ============ -->
+        <div class="page" id="page-services">
+          <div class="page-header"><h1 class="page-title">Services & Pricing</h1></div>
+          <div class="services-grid">
+            <div class="service-mgmt-card">
+              <div class="smc-header"><span class="smc-emoji">🛞</span><h3>Flat Tire</h3><label class="mini-toggle"><input type="checkbox" checked><span class="mini-slider"></span></label></div>
+              <div class="smc-prices"><div class="smc-price-row"><span>Bike</span><span>₹149</span></div><div class="smc-price-row"><span>Car</span><span>₹249</span></div><div class="smc-price-row"><span>Auto</span><span>₹199</span></div><div class="smc-price-row"><span>Truck</span><span>₹499</span></div></div>
+            </div>
+            <div class="service-mgmt-card">
+              <div class="smc-header"><span class="smc-emoji">⚙️</span><h3>Engine Issue</h3><label class="mini-toggle"><input type="checkbox" checked><span class="mini-slider"></span></label></div>
+              <div class="smc-prices"><div class="smc-price-row"><span>Bike</span><span>₹299</span></div><div class="smc-price-row"><span>Car</span><span>₹499</span></div><div class="smc-price-row"><span>Auto</span><span>₹399</span></div><div class="smc-price-row"><span>Truck</span><span>₹799</span></div></div>
+            </div>
+            <div class="service-mgmt-card">
+              <div class="smc-header"><span class="smc-emoji">🔋</span><h3>Battery Dead</h3><label class="mini-toggle"><input type="checkbox" checked><span class="mini-slider"></span></label></div>
+              <div class="smc-prices"><div class="smc-price-row"><span>Bike</span><span>₹149</span></div><div class="smc-price-row"><span>Car</span><span>₹199</span></div><div class="smc-price-row"><span>Auto</span><span>₹179</span></div><div class="smc-price-row"><span>Truck</span><span>₹349</span></div></div>
+            </div>
+            <div class="service-mgmt-card">
+              <div class="smc-header"><span class="smc-emoji">🚛</span><h3>Towing</h3><label class="mini-toggle"><input type="checkbox" checked><span class="mini-slider"></span></label></div>
+              <div class="smc-prices"><div class="smc-price-row"><span>Bike</span><span>₹399</span></div><div class="smc-price-row"><span>Car</span><span>₹699</span></div><div class="smc-price-row"><span>Auto</span><span>₹599</span></div><div class="smc-price-row"><span>Truck</span><span>₹1,499</span></div></div>
+            </div>
+            <div class="service-mgmt-card">
+              <div class="smc-header"><span class="smc-emoji">⛽</span><h3>Out of Fuel</h3><label class="mini-toggle"><input type="checkbox" checked><span class="mini-slider"></span></label></div>
+              <div class="smc-prices"><div class="smc-price-row"><span>Bike</span><span>₹99</span></div><div class="smc-price-row"><span>Car</span><span>₹149</span></div><div class="smc-price-row"><span>Auto</span><span>₹129</span></div><div class="smc-price-row"><span>Truck</span><span>₹249</span></div></div>
+            </div>
+            <div class="service-mgmt-card">
+              <div class="smc-header"><span class="smc-emoji">🔑</span><h3>Key Lockout</h3><label class="mini-toggle"><input type="checkbox" checked><span class="mini-slider"></span></label></div>
+              <div class="smc-prices"><div class="smc-price-row"><span>Bike</span><span>₹199</span></div><div class="smc-price-row"><span>Car</span><span>₹349</span></div><div class="smc-price-row"><span>Auto</span><span>₹299</span></div><div class="smc-price-row"><span>Truck</span><span>₹499</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: NOTIFICATIONS ============ -->
+        <div class="page" id="page-notifications">
+          <div class="page-header"><h1 class="page-title">Notifications</h1><button class="btn-admin-primary">+ Send Notification</button></div>
+          <div class="notif-composer">
+            <div class="form-group"><label>Send To</label><select class="filter-select full"><option>All Users</option><option>All Mechanics</option><option>Specific Segment</option></select></div>
+            <div class="form-group"><label>Title</label><input type="text" placeholder="Notification title..." class="admin-input"></div>
+            <div class="form-group"><label>Message</label><textarea placeholder="Write your notification message..." class="admin-textarea" rows="3"></textarea></div>
+            <button class="btn-admin-primary">Send Now</button>
+          </div>
+          <h3 class="section-title-lg" style="margin-top:24px;">Sent History</h3>
+          <div class="notif-history-list">
+            <div class="notif-history-item"><div class="nh-info"><span class="nh-title">Summer Special Discount!</span><span class="nh-target">All Users • Jun 26, 2026</span></div><span class="nh-stat">12,340 delivered</span></div>
+            <div class="notif-history-item"><div class="nh-info"><span class="nh-title">New Service Areas Added</span><span class="nh-target">All Mechanics • Jun 25, 2026</span></div><span class="nh-stat">845 delivered</span></div>
+            <div class="notif-history-item"><div class="nh-info"><span class="nh-title">Platform Maintenance Notice</span><span class="nh-target">All Users + Mechanics • Jun 20, 2026</span></div><span class="nh-stat">13,185 delivered</span></div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: REVIEWS ============ -->
+        <div class="page" id="page-reviews">
+          <div class="page-header"><h1 class="page-title">Ratings & Reviews</h1></div>
+          <div class="reviews-overview">
+            <div class="ro-card"><span class="ro-big">4.7</span><span class="ro-label">Platform Avg Rating</span></div>
+            <div class="ro-card"><span class="ro-big">8,542</span><span class="ro-label">Total Reviews</span></div>
+            <div class="ro-card"><span class="ro-big">23</span><span class="ro-label">Flagged Reviews</span></div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Reviewer</th><th>Mechanic</th><th>Rating</th><th>Comment</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td>Arun Kumar</td><td>Rajesh S.</td><td>⭐⭐⭐⭐⭐</td><td>Excellent service! Very professional.</td><td>Today</td><td><div class="table-actions"><button class="action-btn">👁</button><button class="action-btn">🚩</button></div></td></tr>
+                <tr><td>Priya Singh</td><td>Kumar N.</td><td>⭐⭐⭐⭐</td><td>Quick response and friendly.</td><td>Today</td><td><div class="table-actions"><button class="action-btn">👁</button><button class="action-btn">🚩</button></div></td></tr>
+                <tr><td>Rahul Verma</td><td>Pradeep A.</td><td>⭐⭐⭐⭐⭐</td><td>Very knowledgeable mechanic.</td><td>Yesterday</td><td><div class="table-actions"><button class="action-btn">👁</button><button class="action-btn">🚩</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: ANALYTICS ============ -->
+        <div class="page" id="page-analytics">
+          <div class="page-header"><h1 class="page-title">Reports & Analytics</h1><div class="page-actions"><select class="filter-select"><option>Last 7 Days</option><option>Last 30 Days</option><option>Last 90 Days</option><option>This Year</option></select><button class="btn-admin-outline">Export PDF</button></div></div>
+          <div class="analytics-grid">
+            <div class="chart-card"><h3 class="chart-title">User Signups</h3><canvas id="signups-chart" height="200"></canvas></div>
+            <div class="chart-card"><h3 class="chart-title">Booking Trends</h3><canvas id="booking-trends-chart" height="200"></canvas></div>
+            <div class="chart-card"><h3 class="chart-title">Mechanic Response Time (min)</h3><canvas id="response-chart" height="200"></canvas></div>
+            <div class="chart-card"><h3 class="chart-title">Cancellation Rate</h3><canvas id="cancel-chart" height="200"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: SETTINGS ============ -->
+        <div class="page" id="page-settings">
+          <div class="page-header"><h1 class="page-title">Platform Settings</h1></div>
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3 class="sc-title">General Settings</h3>
+              <div class="form-group"><label>Platform Name</label><input type="text" class="admin-input" value="rescueX"></div>
+              <div class="form-group"><label>Support Email</label><input type="email" class="admin-input" value="support@rescuex.in"></div>
+              <div class="form-group"><label>Support Phone</label><input type="tel" class="admin-input" value="+91 1800 RESCUEX"></div>
+              <button class="btn-admin-primary">Save Changes</button>
+            </div>
+            <div class="settings-card">
+              <h3 class="sc-title">Commission Settings</h3>
+              <div class="form-group"><label>Platform Commission (%)</label><input type="number" class="admin-input" value="15"></div>
+              <div class="form-group"><label>Bike Commission (%)</label><input type="number" class="admin-input" value="12"></div>
+              <div class="form-group"><label>Car Commission (%)</label><input type="number" class="admin-input" value="15"></div>
+              <div class="form-group"><label>Truck Commission (%)</label><input type="number" class="admin-input" value="18"></div>
+              <button class="btn-admin-primary">Update Commission</button>
+            </div>
+            <div class="settings-card">
+              <h3 class="sc-title">Service Area</h3>
+              <div class="form-group"><label>Max Service Radius (km)</label><input type="number" class="admin-input" value="25"></div>
+              <div class="form-group"><label>Mechanic Search Radius (km)</label><input type="number" class="admin-input" value="10"></div>
+              <div class="form-group"><label>Auto-Assignment</label><select class="filter-select full"><option>Nearest Mechanic</option><option>Highest Rated</option><option>Manual</option></select></div>
+              <button class="btn-admin-primary">Save</button>
+            </div>
+            <div class="settings-card">
+              <h3 class="sc-title">Platform Control</h3>
+              <div class="form-group">
+                <label>Maintenance Mode</label>
+                <label class="mini-toggle"><input type="checkbox"><span class="mini-slider"></span></label>
+              </div>
+              <div class="form-group"><label>Downtime Message</label><textarea class="admin-textarea" rows="2" placeholder="We'll be back shortly..."></textarea></div>
+              <h4 style="margin:16px 0 8px; font-size: 14px;">Admin Accounts</h4>
+              <div class="admin-accounts-list">
+                <div class="admin-account-row"><span>admin@rescuex.in</span><span class="role-badge">Super Admin</span></div>
+                <div class="admin-account-row"><span>support@rescuex.in</span><span class="role-badge">Support</span></div>
+                <div class="admin-account-row"><span>finance@rescuex.in</span><span class="role-badge">Finance</span></div>
+              </div>
+              <button class="btn-admin-outline btn-full" style="margin-top:12px;">+ Add Admin</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay hidden" id="modal-overlay">
+      <div class="modal-card" id="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modal-title">Details</h2>
+          <button class="btn-icon modal-close" id="modal-close">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="admin-toast hidden" id="admin-toast">
+      <span class="admin-toast-msg" id="admin-toast-msg"></span>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
