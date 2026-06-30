@@ -15,17 +15,28 @@ export function Mechanics() {
   const fetchMechanics = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('mechanics')
-      .select('*')
+      .from('expert_profiles')
+      .select('*, profiles(full_name, mobile)')
       .order('created_at', { ascending: false });
       
     if (data) setMechanics(data);
     setLoading(false);
   };
 
+  const handleUpdateStatus = async (id, newStatus) => {
+    const { error } = await supabase
+      .from('expert_profiles')
+      .update({ kyc_status: newStatus })
+      .eq('id', id);
+      
+    if (!error) {
+      setMechanics(mechanics.map(m => m.id === id ? { ...m, kyc_status: newStatus } : m));
+    }
+  };
+
   const filteredMechanics = mechanics.filter(m => 
-    m.name?.toLowerCase().includes(search.toLowerCase()) || 
-    m.phone?.includes(search)
+    m.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) || 
+    m.profiles?.mobile?.includes(search)
   );
 
   return (
@@ -92,12 +103,12 @@ export function Mechanics() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-sm font-bold text-accent">
-                          {m.name ? m.name.substring(0, 2).toUpperCase() : 'M'}
+                          {m.profiles?.full_name ? m.profiles.full_name.substring(0, 2).toUpperCase() : 'M'}
                         </div>
-                        <div className="font-medium text-white">{m.name || 'Unknown'}</div>
+                        <div className="font-medium text-white">{m.profiles?.full_name || 'Unknown'}</div>
                       </div>
                     </td>
-                    <td className="p-4 text-sm text-gray-300">{m.phone}</td>
+                    <td className="p-4 text-sm text-gray-300">{m.profiles?.mobile}</td>
                     <td className="p-4">
                       {m.kyc_status === 'approved' ? <span className="text-green-500 bg-green-500/10 px-2 py-1 rounded text-xs font-bold">Approved</span> :
                        m.kyc_status === 'pending' ? <span className="text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded text-xs font-bold">Pending</span> :
@@ -116,7 +127,17 @@ export function Mechanics() {
                     <td className="p-4 text-sm text-gray-300">₹{m.total_earnings || 0}</td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-1.5 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                        {m.kyc_status === 'pending' && (
+                          <>
+                            <button onClick={() => handleUpdateStatus(m.id, 'approved')} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg transition-colors" title="Approve">
+                              <CheckCircle size={18} />
+                            </button>
+                            <button onClick={() => handleUpdateStatus(m.id, 'rejected')} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors" title="Reject">
+                              <Ban size={18} />
+                            </button>
+                          </>
+                        )}
+                        <button className="p-1.5 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors" title="More Options">
                           <MoreVertical size={16} />
                         </button>
                       </div>
