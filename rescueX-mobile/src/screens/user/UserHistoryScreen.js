@@ -23,7 +23,7 @@ export default function UserHistoryScreen() {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'booking_created': return 'Incomplete';
+      case 'waiting_assignment': return 'Incomplete';
       case 'expert_assigned': return 'Incomplete';
       case 'service_in_progress': return 'In Progress';
       case 'pending_completion_verification': return 'Incomplete';
@@ -89,7 +89,14 @@ export default function UserHistoryScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.bookingHeader}>
-                <Text style={styles.bookingId}>ID: {booking.id}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
+                  {booking.type === 'instant' ? (
+                    <MaterialCommunityIcons name="lightning-bolt" size={16} color="#ff5e2c" style={{ marginRight: 4 }} />
+                  ) : (
+                    <MaterialCommunityIcons name="calendar-clock" size={16} color="#4C1D95" style={{ marginRight: 4 }} />
+                  )}
+                  <Text style={[styles.bookingId, { flex: 1 }]} numberOfLines={1} ellipsizeMode="middle">ID: {booking.id}</Text>
+                </View>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '15' }]}>
                   <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
                     {getStatusText(booking.status)}
@@ -97,20 +104,41 @@ export default function UserHistoryScreen() {
                 </View>
               </View>
               
-              <Text style={styles.dateText}>
-                Scheduled: {booking.scheduledDate} {booking.scheduledTime ? `at ${booking.scheduledTime}` : ''}
-              </Text>
-
-              {booking.services && booking.services.map((svc, i) => (
-                <Text key={i} style={styles.serviceText}>
-                  {svc.quantity}x {svc.name}
+              {booking.type === 'instant' ? (
+                <Text style={[styles.dateText, { color: '#ff5e2c' }]}>
+                  Instant Service Request
                 </Text>
-              ))}
+              ) : (
+                <Text style={styles.dateText}>
+                  Scheduled: {booking.scheduledDate} {booking.scheduledTime ? `at ${booking.scheduledTime}` : ''}
+                </Text>
+              )}
+
+              {booking.type === 'instant' ? (
+                <Text style={styles.serviceText}>
+                  {booking.vehicleTitle} - {booking.problem}
+                </Text>
+              ) : (
+                booking.services && booking.services.map((svc, i) => (
+                  <Text key={i} style={styles.serviceText}>
+                    {svc.quantity}x {svc.name}
+                  </Text>
+                ))
+              )}
               
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>₹{booking.totalAmount || 0}</Text>
+                <Text style={styles.totalValue}>{booking.type === 'instant' && !booking.totalAmount ? 'TBD' : `₹${booking.totalAmount || 0}`}</Text>
               </View>
+
+              {booking.expert && !['pending', 'waiting_assignment'].includes(booking.status) && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
+                  <MaterialCommunityIcons name="account-wrench-outline" size={16} color="#6B7280" />
+                  <Text style={{ fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 13, color: '#6B7280', marginLeft: 6 }}>
+                    Assigned Expert: {booking.expert.name}
+                  </Text>
+                </View>
+              )}
 
               {booking.status === 'booking_completed' && (
                 <View style={styles.completedInfoRow}>

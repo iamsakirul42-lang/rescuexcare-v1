@@ -1,32 +1,83 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
-const MOCK_SAVED_ADDRESSES = [
-  { id: '1', type: 'Home', fullAddress: '123, Palm Grove Apartments, Andheri West', landmark: 'Near Metro Station' },
-  { id: '2', type: 'Work', fullAddress: '45, Tech Park, Malad East', landmark: 'Opposite Mall' }
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
 
 export default function CheckoutAddressScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   
-  const [selectedAddressId, setSelectedAddressId] = useState(MOCK_SAVED_ADDRESSES[0].id);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newAddress, setNewAddress] = useState({ fullAddress: '', landmark: '' });
 
-  const handleNext = () => {
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+
+  const loadAddresses = async () => {
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (userId) {
+        const stored = await AsyncStorage.getItem(`user_addresses_${userId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setSavedAddresses(parsed);
+          if (parsed.length > 0) {
+            setSelectedAddressId(parsed[0].id);
+          } else {
+            setIsAddingNew(true);
+          }
+        } else {
+          setIsAddingNew(true);
+        }
+      } else {
+        setIsAddingNew(true);
+      }
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+      setIsAddingNew(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = async () => {
     let finalAddress = null;
     if (isAddingNew) {
       if (!newAddress.fullAddress.trim()) {
         alert('Please enter your full address');
         return;
       }
-      finalAddress = { ...newAddress, type: 'Other' };
+      finalAddress = { 
+        id: Date.now().toString(),
+        type: 'Other',
+        fullAddress: newAddress.fullAddress.trim(),
+        landmark: newAddress.landmark.trim()
+      };
+      
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id;
+        if (userId) {
+          const updatedAddresses = [...savedAddresses, finalAddress];
+          await AsyncStorage.setItem(`user_addresses_${userId}`, JSON.stringify(updatedAddresses));
+        }
+      } catch (error) {
+        console.error('Error saving new address:', error);
+      }
     } else {
-      finalAddress = MOCK_SAVED_ADDRESSES.find(a => a.id === selectedAddressId);
+      if (!selectedAddressId) {
+        alert('Please select an address');
+        return;
+      }
+      finalAddress = savedAddresses.find(a => a.id === selectedAddressId);
     }
     
     navigation.navigate('CheckoutDateScreen', { address: finalAddress });
@@ -42,10 +93,12 @@ export default function CheckoutAddressScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {!isAddingNew ? (
+        {loading ? (
+          <ActivityIndicator size="large" color="#ff5e2c" style={{ marginTop: 40 }} />
+        ) : !isAddingNew ? (
           <>
             <Text style={styles.sectionTitle}>Saved Addresses</Text>
-            {MOCK_SAVED_ADDRESSES.map((address) => (
+            {savedAddresses.map((address) => (
               <TouchableOpacity 
                 key={address.id}
                 style={[

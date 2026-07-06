@@ -4,6 +4,11 @@
 (function() {
   'use strict';
 
+  // Initialize Supabase using keys from mobile app .env
+  const SUPABASE_URL = 'https://mjhgvrjxxpbolxgslzaq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qaGd2cmp4eHBib2x4Z3NsemFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NTYxMjksImV4cCI6MjA5ODEzMjEyOX0.ir8hHUa5PYrKthOQvtlcmzhDO6eJ7Tx01ss85Huzr9Q';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const state = {
     isLoggedIn: false,
     currentPage: 'dashboard'
@@ -222,6 +227,49 @@
     });
   }
 
+  // ---- Notifications ----
+  function initNotifications() {
+    const sendBtn = $('#btn-send-notif');
+    if (sendBtn) {
+      sendBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const target = $('#notif-target').value;
+        const title = $('#notif-title').value.trim();
+        const message = $('#notif-message').value.trim();
+
+        if (!title || !message) {
+          showToast('Please enter title and message');
+          return;
+        }
+
+        const originalText = sendBtn.textContent;
+        sendBtn.textContent = 'Sending...';
+        sendBtn.disabled = true;
+
+        try {
+          const { error } = await supabase
+            .from('notifications')
+            .insert([
+              { title, message, target_audience: target }
+            ]);
+            
+          if (error) throw error;
+          
+          showToast('Notification sent successfully!');
+          $('#notif-title').value = '';
+          $('#notif-message').value = '';
+        } catch (error) {
+          console.error('Error sending notification:', error);
+          showToast('Error sending notification: ' + error.message);
+        } finally {
+          sendBtn.textContent = originalText;
+          sendBtn.disabled = false;
+        }
+      });
+    }
+  }
+
   // ---- Init ----
   function init() {
     initLogin();
@@ -229,6 +277,7 @@
     setDate();
     initModals();
     initMockActions();
+    initNotifications();
   }
 
   document.addEventListener('DOMContentLoaded', init);

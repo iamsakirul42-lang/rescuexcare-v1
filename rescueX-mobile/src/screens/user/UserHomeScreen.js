@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,8 @@ import { theme } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LocationPickerModal from '../../components/LocationPickerModal';
 import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,8 +34,62 @@ const VehicleCard = ({ title, subtitle, imageSource, isTall, onPress }) => (
 export default function UserHomeScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const [selectedLocation, setSelectedLocation] = useState('Kolkata, WB');
+  const [selectedLocation, setSelectedLocation] = useState('Loading...');
   const [isLocationModalVisible, setLocationModalVisible] = useState(false);
+
+  useEffect(() => {
+    const loadLocation = async () => {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id;
+        
+        let storedLocation = null;
+        if (userId) {
+          storedLocation = await AsyncStorage.getItem(`user_location_${userId}`);
+        }
+        
+        if (storedLocation) {
+          setSelectedLocation(storedLocation);
+        } else if (userId) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('city')
+            .eq('id', userId)
+            .single();
+            
+          if (profileData && profileData.city) {
+            setSelectedLocation(profileData.city);
+            await AsyncStorage.setItem(`user_location_${userId}`, profileData.city);
+          } else {
+            setSelectedLocation('Kolkata, WB');
+          }
+        } else {
+          setSelectedLocation('Kolkata, WB');
+        }
+      } catch (error) {
+        console.error('Error loading location:', error);
+        setSelectedLocation('Kolkata, WB');
+      }
+    };
+    loadLocation();
+  }, []);
+
+  const handleLocationChange = async (newLocation) => {
+    setSelectedLocation(newLocation);
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (userId) {
+        await AsyncStorage.setItem(`user_location_${userId}`, newLocation);
+        await supabase
+          .from('profiles')
+          .update({ city: newLocation })
+          .eq('id', userId);
+      }
+    } catch (error) {
+      console.error('Error saving location:', error);
+    }
+  };
 
   const handleVehiclePress = (vehicleType) => {
     navigation.getParent()?.navigate('BookingScreen', {
@@ -69,18 +125,26 @@ export default function UserHomeScreen() {
             <MaterialCommunityIcons name="chevron-down" size={28} color="#FFFFFF" style={styles.dropdownIcon} />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.avatarContainer} 
-          onPress={() => navigation.navigate('Categories')}
-        >
-          <LottieView
-            source={require('../../../assets/animations/shopping-cart.json')}
-            autoPlay
-            loop
-            style={{ width: 45, height: 45, tintColor: '#FFFFFF' }}
-            colorFilters={[{ keypath: '**', color: '#FFFFFF' }]}
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            style={[styles.avatarContainer, { marginRight: 8 }]} 
+            onPress={() => navigation.navigate('UserNotifications')}
+          >
+            <MaterialCommunityIcons name="bell-outline" size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.avatarContainer} 
+            onPress={() => navigation.navigate('Categories')}
+          >
+            <LottieView
+              source={require('../../../assets/animations/shopping-cart.json')}
+              autoPlay
+              loop
+              style={{ width: 45, height: 45, tintColor: '#FFFFFF' }}
+              colorFilters={[{ keypath: '**', color: '#FFFFFF' }]}
+            />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       <ScrollView 
@@ -135,7 +199,7 @@ export default function UserHomeScreen() {
       <LocationPickerModal 
         visible={isLocationModalVisible}
         onClose={() => setLocationModalVisible(false)}
-        onSelect={setSelectedLocation}
+        onSelect={handleLocationChange}
         selectedLocation={selectedLocation}
       />
     </View>

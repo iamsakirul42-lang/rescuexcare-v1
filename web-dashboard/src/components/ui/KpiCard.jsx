@@ -1,11 +1,14 @@
 import React from 'react';
 
-export function KpiCard({ title, value, change, changeType, icon: Icon, iconColor }) {
+export function KpiCard({ title, value, change, changeType, icon: Icon, iconColor, onClick }) {
   const isPositive = changeType === 'positive';
   const isNegative = changeType === 'negative';
   
   return (
-    <div className="bg-sidebar p-5 rounded-xl border border-gray-800 relative shadow-sm">
+    <div 
+      className={`bg-sidebar p-5 rounded-xl border border-gray-800 relative shadow-sm ${onClick ? 'cursor-pointer hover:bg-gray-800/50 transition-colors' : ''}`}
+      onClick={onClick}
+    >
       <div 
         className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
         style={{ backgroundColor: `${iconColor}15`, color: iconColor }}

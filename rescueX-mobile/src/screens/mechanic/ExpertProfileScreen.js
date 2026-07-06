@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
 
 const MenuItem = ({ icon, title, isDanger, onPress }) => (
   <TouchableOpacity style={styles.menuItem} onPress={onPress}>
@@ -17,6 +18,44 @@ const MenuItem = ({ icon, title, isDanger, onPress }) => (
 
 export default function ExpertProfileScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const [mechanic, setMechanic] = React.useState(null);
+
+  React.useEffect(() => {
+    let subscription;
+
+    const fetchMechanic = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user) {
+        const { data } = await supabase
+          .from('mechanics')
+          .select('name, phone, kyc_status, rating')
+          .eq('id', authData.user.id)
+          .single();
+        if (data) {
+          setMechanic(data);
+        }
+
+        // Live Realtime listener for rating updates
+        subscription = supabase
+          .channel('public:mechanics_' + authData.user.id)
+          .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'mechanics',
+            filter: `id=eq.${authData.user.id}` 
+          }, (payload) => {
+            setMechanic((prev) => prev ? { ...prev, ...payload.new } : payload.new);
+          })
+          .subscribe();
+      }
+    };
+    fetchMechanic();
+
+    return () => {
+      if (subscription) supabase.removeChannel(subscription);
+    };
+  }, []);
+
   const handleLogout = () => {
     navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
   };
@@ -34,14 +73,24 @@ export default function ExpertProfileScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.profileHeader}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>EX</Text>
+            <Text style={styles.avatarText}>{mechanic?.name ? mechanic.name.substring(0,2).toUpperCase() : 'EX'}</Text>
           </View>
           <View style={styles.info}>
-            <Text style={styles.name}>John Mechanic</Text>
-            <Text style={styles.phone}>+91 98765 43210</Text>
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{mechanic?.name || 'Loading...'}</Text>
+              {mechanic?.kyc_status === 'approved' && (
+                <MaterialCommunityIcons 
+                  name="check-decagram" 
+                  size={20} 
+                  color={theme.colors.success || '#10B981'} 
+                  style={{ marginLeft: 4, marginTop: 2 }} 
+                />
+              )}
+            </View>
+            <Text style={styles.phone}>{mechanic?.phone || ''}</Text>
             <View style={styles.ratingBadge}>
               <MaterialCommunityIcons name="star" size={14} color="#FFF" />
-              <Text style={styles.ratingText}>4.8</Text>
+              <Text style={styles.ratingText}>{mechanic?.rating ? Number(mechanic.rating).toFixed(1) : 'New'}</Text>
             </View>
           </View>
         </View>
@@ -60,7 +109,7 @@ export default function ExpertProfileScreen({ navigation }) {
         />
         
         <Text style={styles.sectionTitle}>Settings</Text>
-        <MenuItem icon="bell-outline" title="Notifications" />
+        <MenuItem icon="bell-outline" title="Notifications" onPress={() => navigation.navigate('ExpertNotifications')} />
         <MenuItem icon="headset" title="Help & Support" />
         
         <View style={{ marginTop: 24 }}>
@@ -102,7 +151,8 @@ const styles = StyleSheet.create({
   },
   avatarText: { fontFamily: 'Lufga-Bold', fontSize: 24, color: '#FFF' },
   info: { flex: 1 },
-  name: { fontFamily: 'Lufga-Bold', fontSize: 22, color: theme.colors.textPrimary, marginBottom: 4 },
+  nameContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  name: { fontFamily: 'Lufga-Bold', fontSize: 22, color: theme.colors.textPrimary },
   phone: { fontFamily: 'Lufga-Bold', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 },
   ratingBadge: {
     flexDirection: 'row',

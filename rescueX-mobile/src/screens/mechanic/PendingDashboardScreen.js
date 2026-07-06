@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../theme';
+import { supabase } from '../../lib/supabase';
 
 export default function PendingDashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -14,6 +15,32 @@ export default function PendingDashboardScreen({ navigation }) {
       routes: [{ name: 'RoleSelection' }],
     });
   };
+
+  React.useEffect(() => {
+    let interval;
+    
+    const checkStatus = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData?.user) return;
+
+      const { data } = await supabase
+        .from('mechanics')
+        .select('kyc_status')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (data?.kyc_status === 'approved') {
+        clearInterval(interval);
+        navigation.replace('MechanicSplash');
+      }
+    };
+
+    // Check immediately, then every 5 seconds
+    checkStatus();
+    interval = setInterval(checkStatus, 5000);
+
+    return () => clearInterval(interval);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -59,9 +86,9 @@ export default function PendingDashboardScreen({ navigation }) {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.supportBtn} onPress={() => navigation.navigate('ExpertMainTabs')}>
-          <MaterialCommunityIcons name="rocket-launch" size={20} color={theme.colors.expertPrimary} />
-          <Text style={styles.supportBtnText}>TEST: Enter App Now</Text>
+        <TouchableOpacity style={styles.supportBtn} onPress={() => {}}>
+          <MaterialCommunityIcons name="headset" size={20} color={theme.colors.expertPrimary} />
+          <Text style={styles.supportBtnText}>Contact Support</Text>
         </TouchableOpacity>
       </View>
     </View>

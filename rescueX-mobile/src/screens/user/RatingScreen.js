@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Dimensions, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import { useBooking } from '../../data/bookingStore';
 
 const { width } = Dimensions.get('window');
 
 export default function RatingScreen({ navigation, route }) {
   const { bookingId } = route.params;
+  const { bookings, submitRating } = useBooking();
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
 
+  const booking = bookings.find(b => b.id === bookingId);
+
+  useEffect(() => {
+    // Guard: If rating already exists for this booking, skip this screen
+    if (booking && booking.rating !== null && booking.rating !== undefined) {
+      Alert.alert("Already Rated", "You have already rated this service.");
+      navigation.replace('UserMainTabs', { screen: 'History' });
+    }
+  }, [booking]);
+
   const handleSubmit = () => {
+    if (rating === 0) {
+      Alert.alert("Missing Rating", "Please tap a star to give a rating.");
+      return;
+    }
+    submitRating(bookingId, rating, review);
     navigation.replace('BookingCompleted');
   };
 

@@ -16,7 +16,7 @@ export function Users() {
   const fetchUsers = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
@@ -26,8 +26,8 @@ export function Users() {
   };
 
   const filteredUsers = users.filter(user => 
-    user.name?.toLowerCase().includes(search.toLowerCase()) || 
-    user.phone?.includes(search)
+    user.full_name?.toLowerCase().includes(search.toLowerCase()) || 
+    user.mobile?.includes(search)
   );
 
   return (
@@ -96,12 +96,12 @@ export function Users() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-300 border border-gray-700">
-                          {user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
+                          {user.full_name ? user.full_name.substring(0, 2).toUpperCase() : 'U'}
                         </div>
-                        <div className="font-medium">{user.name || 'Unknown User'}</div>
+                        <div className="font-medium">{user.full_name || 'Unknown User'}</div>
                       </div>
                     </td>
-                    <td className="p-4 text-sm text-gray-300">{user.phone}</td>
+                    <td className="p-4 text-sm text-gray-300">{user.mobile}</td>
                     <td className="p-4 text-sm text-gray-400">{new Date(user.created_at).toLocaleDateString()}</td>
                     <td className="p-4 text-sm text-gray-300">{user.total_bookings || 0}</td>
                     <td className="p-4">

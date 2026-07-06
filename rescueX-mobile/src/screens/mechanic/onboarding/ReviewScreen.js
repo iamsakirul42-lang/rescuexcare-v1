@@ -29,7 +29,7 @@ const DataRow = ({ label, value }) => (
 
 export default function ReviewScreen({ navigation }) {
   const { onboardingData } = useContext(ExpertOnboardingContext);
-  const { personal, address, vehicles, services, experience, bank, emergency } = onboardingData;
+  const { personal, address, vehicles, services, experience, bank, emergency, documents } = onboardingData;
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -42,10 +42,14 @@ export default function ReviewScreen({ navigation }) {
       
       const userId = authData.user.id;
       
-      const { error } = await supabase
-        .from('expert_profiles')
+      // Insert into mechanics table
+      const { error: mechanicsError } = await supabase
+        .from('mechanics')
         .insert({
           id: userId,
+          name: personal.fullName || 'Expert',
+          phone: personal.mobile || '',
+          email: personal.email || '',
           kyc_status: 'pending',
           dob: personal.dob,
           full_address: address.fullAddress,
@@ -61,7 +65,33 @@ export default function ReviewScreen({ navigation }) {
           emergency_contact_mobile: emergency.mobile
         });
         
-      if (error) throw error;
+      if (mechanicsError) throw mechanicsError;
+
+      // Insert into expert_profiles to satisfy the bookings table foreign key constraint
+      const { error: expertProfilesError } = await supabase
+        .from('expert_profiles')
+        .insert({
+          id: userId
+        });
+        
+      if (expertProfilesError) {
+        console.warn('Could not insert into expert_profiles:', expertProfilesError);
+        // We do not throw here, just in case expert_profiles is populated by a trigger in some environments
+      }
+
+      // Insert into kyc_verifications table
+      const { error: kycError } = await supabase
+        .from('kyc_verifications')
+        .insert({
+          mechanic_id: userId,
+          status: 'pending',
+          aadhaar_url: documents?.aadhaar || null,
+          pan_url: documents?.pan || null,
+          license_url: documents?.dl || null,
+          rc_url: documents?.certificate || null
+        });
+
+      if (kycError) throw kycError;
       
       navigation.navigate('Success');
     } catch (err) {
@@ -98,6 +128,13 @@ export default function ReviewScreen({ navigation }) {
           <DataRow label="Vehicles" value={vehicles.join(', ')} />
           <DataRow label="Services" value={services.join(', ')} />
           <DataRow label="Experience" value={`${experience.years} years`} />
+        </ReviewSection>
+
+        <ReviewSection title="Documents" onEdit={() => navigation.navigate('Documents')}>
+          <DataRow label="Aadhaar" value={documents?.aadhaar ? 'Uploaded' : 'Pending'} />
+          <DataRow label="PAN Card" value={documents?.pan ? 'Uploaded' : 'Pending'} />
+          <DataRow label="Driving License" value={documents?.dl ? 'Uploaded' : 'Pending'} />
+          <DataRow label="Certificate" value={documents?.certificate ? 'Uploaded' : 'Pending'} />
         </ReviewSection>
 
         <ReviewSection title="Bank Details" onEdit={() => navigation.navigate('BankDetails')}>

@@ -16,32 +16,32 @@ export default function CheckoutPaymentScreen() {
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handlePay = () => {
+  const handlePay = async () => {
     setIsProcessing(true);
 
     // Simulate network delay for payment processing
-    setTimeout(() => {
-      // 1. Create booking in global store
-      const newBooking = createBooking({
-        services: cart.map(item => ({ ...item.service, quantity: item.quantity })),
-        vehicleId: cartVehicleId,
-        totalAmount: cartTotal,
-        scheduledDate: date,
-        scheduledTime: time,
-        address,
-        notes,
-        paymentMethod,
-        bookingType: 'scheduled'
-      });
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // 2. Clear Cart
-      clearCart();
+    // 1. Create booking in global store
+    const newBooking = await createBooking({
+      services: cart.map(item => ({ ...item.service, quantity: item.quantity })),
+      vehicleId: cartVehicleId,
+      totalAmount: cartTotal,
+      scheduledDate: date,
+      scheduledTime: time,
+      address,
+      notes,
+      paymentMethod,
+      bookingType: 'scheduled'
+    });
 
-      setIsProcessing(false);
-      
-      // 3. Navigate to confirmation screen
-      navigation.navigate('CheckoutConfirmedScreen');
-    }, 1500);
+    // 2. Clear Cart
+    clearCart();
+
+    setIsProcessing(false);
+    
+    // 3. Navigate to confirmation screen
+    navigation.navigate('CheckoutConfirmedScreen');
   };
 
   return (

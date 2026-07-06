@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../theme';
+import { supabase } from '../../lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -24,12 +25,49 @@ const MenuOption = ({ icon, title, subtitle, onPress, isDestructive }) => (
 );
 
 export default function UserProfileScreen({ navigation }) {
-  // Dummy user data
-  const user = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+91 98765 43210'
-  };
+  const [user, setUser] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        if (authData?.user) {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('full_name, email, mobile')
+            .eq('id', authData.user.id)
+            .single();
+
+          if (profileData) {
+            setUser({
+              name: profileData.full_name || 'User',
+              email: profileData.email || authData.user.email,
+              phone: profileData.mobile ? `+91 ${profileData.mobile}` : ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.mainContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.mainContainer}>
@@ -64,7 +102,12 @@ export default function UserProfileScreen({ navigation }) {
           <View style={styles.cardContainer}>
             <MenuOption icon="account-outline" title="Personal Info" subtitle="Update your details" />
             <View style={styles.divider} />
-            <MenuOption icon="map-marker-outline" title="Saved Addresses" subtitle="Manage your locations" />
+            <MenuOption 
+              icon="map-marker-outline" 
+              title="Saved Addresses" 
+              subtitle="Manage your locations" 
+              onPress={() => navigation.navigate('SavedAddresses')}
+            />
             <View style={styles.divider} />
             <MenuOption icon="credit-card-outline" title="Payment Methods" subtitle="Cards & Wallets" />
           </View>
@@ -90,7 +133,8 @@ export default function UserProfileScreen({ navigation }) {
               icon="logout" 
               title="Log Out" 
               isDestructive={true} 
-              onPress={() => {
+              onPress={async () => {
+                await supabase.auth.signOut();
                 navigation.reset({
                   index: 0,
                   routes: [{ name: 'RoleSelection' }],

@@ -146,7 +146,9 @@ const SpinningRing = ({ size, color, duration, clockwise }) => {
   );
 };
 
-export default function UserSplash({ navigation }) {
+export default function UserSplash({ navigation, route }) {
+  const isLogin = route?.params?.isLogin || false;
+
   const progress = useRef(new Animated.Value(0)).current;
   const stepAnims = STEPS.map(() => useRef(new Animated.Value(0)).current);
   const stepCheckAnims = STEPS.map(() => useRef(new Animated.Value(0)).current);
@@ -156,7 +158,7 @@ export default function UserSplash({ navigation }) {
   const shimmer = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Logo dramatic entrance: scale up + subtle rotation
+    // Logo dramatic entrance
     Animated.parallel([
       Animated.spring(logoScale, {
         toValue: 1,
@@ -195,53 +197,53 @@ export default function UserSplash({ navigation }) {
       })
     ).start();
 
-    // Progress bar: 10 seconds
+    const totalDuration = isLogin ? 3000 : 9500;
+
+    // Progress bar
     Animated.timing(progress, {
       toValue: 100,
-      duration: 9500,
+      duration: totalDuration,
       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       useNativeDriver: false,
     }).start();
 
-    // Staggered step animations
-    const stepDelay = 9500 / STEPS.length;
-    STEPS.forEach((_, i) => {
-      // Step slides in
-      setTimeout(() => {
-        Animated.spring(stepAnims[i], {
-          toValue: 1,
-          friction: 5,
-          tension: 50,
-          useNativeDriver: true,
-        }).start();
-
-        // Previous step gets a checkmark after a beat
-        if (i > 0) {
-          Animated.spring(stepCheckAnims[i - 1], {
+    if (!isLogin) {
+      // Staggered step animations for Signup (10s flow)
+      const stepDelay = 9500 / STEPS.length;
+      STEPS.forEach((_, i) => {
+        setTimeout(() => {
+          Animated.spring(stepAnims[i], {
             toValue: 1,
             friction: 5,
-            tension: 60,
+            tension: 50,
             useNativeDriver: true,
           }).start();
-        }
-      }, i * stepDelay + 500);
-    });
 
-    // Final step checkmark
-    setTimeout(() => {
-      Animated.spring(stepCheckAnims[STEPS.length - 1], {
-        toValue: 1,
-        friction: 5,
-        tension: 60,
-        useNativeDriver: true,
-      }).start();
+          if (i > 0) {
+            Animated.spring(stepCheckAnims[i - 1], {
+              toValue: 1,
+              friction: 5,
+              tension: 60,
+              useNativeDriver: true,
+            }).start();
+          }
+        }, i * stepDelay + 500);
+      });
 
-    }, 9000);
+      setTimeout(() => {
+        Animated.spring(stepCheckAnims[STEPS.length - 1], {
+          toValue: 1,
+          friction: 5,
+          tension: 60,
+          useNativeDriver: true,
+        }).start();
+      }, 9000);
+    }
 
-    // Navigate after 10 seconds
+    // Navigate after duration
     const timer = setTimeout(() => {
       navigation.replace('UserMainTabs');
-    }, 10000);
+    }, isLogin ? 3000 : 10000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -261,7 +263,6 @@ export default function UserSplash({ navigation }) {
     outputRange: ['0deg', '-5deg'],
   });
 
-  // Orbs configuration
   const orbs = [
     { delay: 0, startX: width * 0.05, size: 10, color: '#22C55E', duration: 3500 },
     { delay: 500, startX: width * 0.2, size: 14, color: '#F97316', duration: 4000 },
@@ -270,26 +271,20 @@ export default function UserSplash({ navigation }) {
     { delay: 700, startX: width * 0.65, size: 16, color: '#8B5CF6', duration: 4200 },
     { delay: 200, startX: width * 0.8, size: 9, color: '#F97316', duration: 3600 },
     { delay: 900, startX: width * 0.9, size: 11, color: '#22C55E', duration: 3400 },
-    { delay: 400, startX: width * 0.12, size: 7, color: '#EC4899', duration: 4100 },
-    { delay: 600, startX: width * 0.42, size: 13, color: '#06B6D4', duration: 3700 },
-    { delay: 800, startX: width * 0.72, size: 10, color: '#EAB308', duration: 3300 },
   ];
 
   return (
     <View style={styles.container}>
-
-      {/* Floating orbs */}
       {orbs.map((orb, i) => (
         <FloatingOrb key={i} {...orb} />
       ))}
 
       <View style={styles.content}>
-        {/* Logo with dramatic entrance */}
         <Animated.View
           style={{
             transform: [{ scale: logoScale }, { rotate: logoRotation }],
             opacity: logoOpacity,
-            marginBottom: 10,
+            marginBottom: isLogin ? 40 : 10,
           }}
         >
           <Image
@@ -300,64 +295,71 @@ export default function UserSplash({ navigation }) {
           />
         </Animated.View>
 
-        {/* Steps with checkmarks */}
-        <View style={styles.stepsContainer}>
-          {STEPS.map((step, i) => (
-            <Animated.View
-              key={i}
-              style={[
-                styles.stepRow,
-                {
-                  opacity: stepAnims[i],
-                  transform: [
-                    {
-                      translateX: stepAnims[i].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-50, 0],
-                      }),
-                    },
-                    {
-                      scale: stepAnims[i].interpolate({
-                        inputRange: [0, 0.5, 1],
-                        outputRange: [0.8, 1.05, 1],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <View style={[styles.stepIconCircle, { backgroundColor: step.color + '20' }]}>
-                <MaterialCommunityIcons name={step.icon} size={18} color={step.color} />
-              </View>
-              <Text style={[styles.stepLabel, { color: step.color === '#22C55E' && i === STEPS.length - 1 ? '#22C55E' : '#4B5563' }]}>
-                {step.label}
-              </Text>
-              {/* Checkmark */}
+        {isLogin ? (
+          <View style={{ alignItems: 'center', marginBottom: 40 }}>
+            <Text style={{ fontFamily: 'Lufga-Bold', fontSize: 24, color: '#1A1A1A', marginBottom: 8 }}>
+              Welcome back!
+            </Text>
+            <Text style={{ fontFamily: 'Lufga-Medium', fontSize: 15, color: '#6B7280', textAlign: 'center' }}>
+              Getting your dashboard ready...
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.stepsContainer}>
+            {STEPS.map((step, i) => (
               <Animated.View
-                style={{
-                  marginLeft: 'auto',
-                  opacity: stepCheckAnims[i],
-                  transform: [
-                    {
-                      scale: stepCheckAnims[i].interpolate({
-                        inputRange: [0, 0.5, 1],
-                        outputRange: [0, 1.3, 1],
-                      }),
-                    },
-                  ],
-                }}
+                key={i}
+                style={[
+                  styles.stepRow,
+                  {
+                    opacity: stepAnims[i],
+                    transform: [
+                      {
+                        translateX: stepAnims[i].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-50, 0],
+                        }),
+                      },
+                      {
+                        scale: stepAnims[i].interpolate({
+                          inputRange: [0, 0.5, 1],
+                          outputRange: [0.8, 1.05, 1],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
               >
-                <MaterialCommunityIcons name="check-circle" size={20} color={step.color} />
+                <View style={[styles.stepIconCircle, { backgroundColor: step.color + '20' }]}>
+                  <MaterialCommunityIcons name={step.icon} size={18} color={step.color} />
+                </View>
+                <Text style={[styles.stepLabel, { color: step.color === '#22C55E' && i === STEPS.length - 1 ? '#22C55E' : '#4B5563' }]}>
+                  {step.label}
+                </Text>
+                <Animated.View
+                  style={{
+                    marginLeft: 'auto',
+                    opacity: stepCheckAnims[i],
+                    transform: [
+                      {
+                        scale: stepCheckAnims[i].interpolate({
+                          inputRange: [0, 0.5, 1],
+                          outputRange: [0, 1.3, 1],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <MaterialCommunityIcons name="check-circle" size={20} color={step.color} />
+                </Animated.View>
               </Animated.View>
-            </Animated.View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
-        {/* Progress bar with shimmer */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTrack}>
             <Animated.View style={[styles.progressFill, { width: progressWidth }]}>
-              {/* Shimmer effect */}
               <Animated.View
                 style={[
                   styles.shimmer,
@@ -370,7 +372,6 @@ export default function UserSplash({ navigation }) {
         </View>
       </View>
 
-      {/* Bottom illustration */}
       <Image
         source={require('../../../assets/images/kolkata-art-transparent.png')}
         style={styles.bgIllustration}

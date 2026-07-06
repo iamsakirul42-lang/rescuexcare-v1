@@ -1,15 +1,45 @@
-import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { ExpertOnboardingContext } from '../../data/ExpertOnboardingContext';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { theme } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '../../lib/supabase';
 
 export default function ProfileBankDetailsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { onboardingData } = useContext(ExpertOnboardingContext);
-  const data = onboardingData.bank;
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user) {
+        const { data: mechanicData } = await supabase
+          .from('mechanics')
+          .select('bank_name, bank_account_number, bank_account_name')
+          .eq('id', authData.user.id)
+          .single();
+        if (mechanicData) {
+          setData({
+            bankName: mechanicData.bank_name,
+            accountNumber: mechanicData.bank_account_number,
+            holderName: mechanicData.bank_account_name
+          });
+        }
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  if (loading || !data) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.expertPrimary} />
+      </View>
+    );
+  }
 
   const handleRequestChange = () => {
     navigation.navigate('ChangeBankRequest');

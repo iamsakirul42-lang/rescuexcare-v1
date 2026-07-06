@@ -7,6 +7,7 @@ import {
   Wrench, 
   FileCheck, 
   Calendar, 
+  CalendarClock,
   IndianRupee, 
   Settings, 
   Bell, 
@@ -22,12 +23,13 @@ const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { name: 'Live Activity', icon: Map, path: '/live-activity' },
   { name: 'Dispatch Center', icon: Truck, path: '/dispatch' },
+  { name: 'Scheduled Services', icon: CalendarClock, path: '/scheduled-services' },
   { name: 'Users', icon: Users, path: '/users' },
   { name: 'Account Deletions', icon: UserMinus, path: '/account-deletions' },
   { name: 'Mechanics', icon: Wrench, path: '/mechanics' },
-  { name: 'KYC Verification', icon: FileCheck, path: '/kyc', badge: 5 },
+  { name: 'KYC Verification', icon: FileCheck, path: '/kyc' },
   { name: 'Bookings', icon: Calendar, path: '/bookings' },
-  { name: 'Payments & Wallet', icon: IndianRupee, path: '/payments' },
+  { name: 'Financial Dashboard', icon: IndianRupee, path: '/finance' },
   { name: 'Services', icon: Settings, path: '/services' },
   { name: 'Notifications', icon: Bell, path: '/notifications' },
   { name: 'Reviews', icon: Star, path: '/reviews' },
@@ -46,8 +48,17 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 bg-sidebar border-r border-gray-800 flex flex-col flex-shrink-0 transition-all duration-300">
-      <div className="h-18 flex items-center p-6 mb-2">
-        <h1 className="text-3xl font-extrabold tracking-tighter">
+      <div className="flex items-center px-6 py-4 mb-2">
+        <img 
+          src="/logo.png" 
+          alt="RescueX" 
+          className="h-20 w-full object-contain"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextElementSibling.style.display = 'block';
+          }}
+        />
+        <h1 className="text-3xl font-extrabold tracking-tighter hidden" style={{ display: 'none' }}>
           <span className="text-text">rescue</span>
           <span className="text-primary">X</span>
         </h1>

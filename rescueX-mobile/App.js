@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -12,6 +12,7 @@ import ExpertOnboardingNavigator from './src/navigation/ExpertOnboardingNavigato
 import PendingDashboardScreen from './src/screens/mechanic/PendingDashboardScreen';
 import SignupScreen from './src/screens/auth/SignupScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
+import OtpVerificationScreen from './src/screens/auth/OtpVerificationScreen';
 import UserSplash from './src/screens/user/UserSplash';
 import UserSettingsScreen from './src/screens/user/UserSettingsScreen';
 import DeleteAccountWarningScreen from './src/screens/user/DeleteAccountWarningScreen';
@@ -44,6 +45,10 @@ import CheckoutConfirmedScreen from './src/screens/user/CheckoutConfirmedScreen'
 import ServiceDetailsScreen from './src/screens/user/ServiceDetailsScreen';
 import UserBookingDetailsScreen from './src/screens/user/UserBookingDetailsScreen';
 import ExpertActiveJobScreen from './src/screens/mechanic/ExpertActiveJobScreen';
+import ExpertNotificationsScreen from './src/screens/mechanic/ExpertNotificationsScreen';
+import UserNotificationsScreen from './src/screens/user/UserNotificationsScreen';
+import SavedAddressesScreen from './src/screens/user/SavedAddressesScreen';
+import { syncServicePricing } from './src/data/categoriesMarketplace';
 
 const Stack = createNativeStackNavigator();
 
@@ -54,6 +59,10 @@ export default function App() {
     'Rockybilly': require('./assets/fonts/Rockybilly.ttf'),
     'Lufga-Bold': require('./assets/fonts/Lufga-Bold.ttf'),
   });
+
+  useEffect(() => {
+    syncServicePricing();
+  }, []);
 
   if (!fontsLoaded) {
     return null;
@@ -72,6 +81,7 @@ export default function App() {
               <Stack.Screen name="PendingDashboard" component={PendingDashboardScreen} />
               <Stack.Screen name="UserSignup" component={SignupScreen} initialParams={{ role: 'user' }} />
               <Stack.Screen name="ExpertSignup" component={SignupScreen} initialParams={{ role: 'expert' }} />
+              <Stack.Screen name="OtpVerification" component={OtpVerificationScreen} />
               <Stack.Screen name="LoginScreen" component={LoginScreen} />
               <Stack.Screen name="UserSplash" component={UserSplash} />
               <Stack.Screen name="UserSettings" component={UserSettingsScreen} />
@@ -80,10 +90,13 @@ export default function App() {
               <Stack.Screen name="DeleteAccountConfirm" component={DeleteAccountConfirmScreen} />
               <Stack.Screen name="DeleteAccountSuccess" component={DeleteAccountSuccessScreen} />
               <Stack.Screen name="MechanicSplash" component={MechanicSplash} />
+              <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
+              <Stack.Screen name="UserNotifications" component={UserNotificationsScreen} />
               <Stack.Screen name="UserMainTabs" component={UserMainTabs} />
               <Stack.Screen name="ExpertMainTabs" component={ExpertMainTabs} />
               <Stack.Screen name="ExpertWithdraw" component={ExpertWithdrawScreen} />
               <Stack.Screen name="ExpertWithdrawSuccess" component={ExpertWithdrawSuccessScreen} />
+              <Stack.Screen name="ExpertNotifications" component={ExpertNotificationsScreen} />
               <Stack.Screen name="ProfilePersonalDetails" component={ProfilePersonalDetailsScreen} />
               <Stack.Screen name="ProfileBankDetails" component={ProfileBankDetailsScreen} />
               <Stack.Screen name="ChangeBankRequest" component={ChangeBankRequestScreen} />

@@ -6,29 +6,89 @@ export function Reviews() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [stats, setStats] = useState({
+    avgRating: '0.0',
+    totalReviews: 0,
+    flaggedReviews: 0
+  });
+
   useEffect(() => {
     fetchReviews();
   }, []);
 
   const fetchReviews = async () => {
     setLoading(true);
-    // Assuming a 'reviews' table exists
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*, users(name), mechanics(name)')
-      .order('created_at', { ascending: false })
-      .limit(30);
+    try {
+      // Fetch all ratings for stats
+      const { data: allRatings, count } = await supabase
+        .from('bookings')
+        .select('rating', { count: 'exact' })
+        .not('rating', 'is', null);
+
+      let avgRating = '0.0';
+      let totalReviews = count || 0;
+      let flaggedReviews = 0; // We don't have flagged functionality yet, mock to 0
+
+      if (allRatings && allRatings.length > 0) {
+        const sum = allRatings.reduce((acc, curr) => acc + Number(curr.rating), 0);
+        avgRating = (sum / allRatings.length).toFixed(1);
+      }
       
-    if (data) setReviews(data);
-    else {
-      // Mock data if table doesn't exist yet
-      setReviews([
-        { id: 1, users: { name: 'Arun Kumar' }, mechanics: { name: 'Rajesh S.' }, rating: 5, comment: 'Excellent service! Very professional.', created_at: new Date().toISOString() },
-        { id: 2, users: { name: 'Priya Singh' }, mechanics: { name: 'Kumar N.' }, rating: 4, comment: 'Quick response and friendly.', created_at: new Date().toISOString() },
-        { id: 3, users: { name: 'Rahul Verma' }, mechanics: { name: 'Pradeep A.' }, rating: 5, comment: 'Very knowledgeable mechanic.', created_at: new Date().toISOString() },
-      ]);
+      setStats({
+        avgRating,
+        totalReviews,
+        flaggedReviews
+      });
+
+      // Fetch reviews for table (latest 30)
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .not('rating', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (bookingsError) throw bookingsError;
+
+      if (bookingsData && bookingsData.length > 0) {
+        // Fetch users
+        const userIds = [...new Set(bookingsData.map(b => b.user_id).filter(Boolean))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+
+        // Fetch mechanics
+        const expertIds = [...new Set(bookingsData.map(b => b.expert_id).filter(Boolean))];
+        const { data: mechanicsData } = await supabase
+          .from('mechanics')
+          .select('id, name')
+          .in('id', expertIds);
+
+        const mappedReviews = bookingsData.map(booking => {
+          const user = profilesData?.find(p => p.id === booking.user_id);
+          const mechanic = mechanicsData?.find(m => m.id === booking.expert_id);
+          
+          return {
+            id: booking.id,
+            rating: booking.rating,
+            comment: booking.review || booking.review_text || '',
+            created_at: booking.created_at,
+            users: { name: user?.full_name || 'Unknown User' },
+            mechanics: { name: mechanic?.name || 'Unknown Mechanic' }
+          };
+        });
+
+        setReviews(mappedReviews);
+      } else {
+        setReviews([]);
+      }
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      setReviews([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -40,15 +100,15 @@ export function Reviews() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-sidebar rounded-xl border border-gray-800 p-6 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-5xl font-extrabold text-primary mb-2">4.7</span>
+          <span className="text-5xl font-extrabold text-primary mb-2">{stats.avgRating}</span>
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Platform Avg Rating</span>
         </div>
         <div className="bg-sidebar rounded-xl border border-gray-800 p-6 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-5xl font-extrabold text-white mb-2">8,542</span>
+          <span className="text-5xl font-extrabold text-white mb-2">{stats.totalReviews.toLocaleString()}</span>
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Reviews</span>
         </div>
         <div className="bg-sidebar rounded-xl border border-gray-800 p-6 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-5xl font-extrabold text-red-500 mb-2">23</span>
+          <span className="text-5xl font-extrabold text-red-500 mb-2">{stats.flaggedReviews}</span>
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Flagged Reviews</span>
         </div>
       </div>

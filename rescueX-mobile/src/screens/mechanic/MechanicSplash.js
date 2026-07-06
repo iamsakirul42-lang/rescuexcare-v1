@@ -12,7 +12,8 @@ export default function MechanicSplash({ navigation }) {
       duration: 2000,
       useNativeDriver: false,
     }).start(() => {
-      // navigation.replace('MechanicAuth'); // Will implement next
+      // When animation finishes, go straight to the expert dashboard
+      navigation.replace('ExpertMainTabs');
     });
   }, []);
 

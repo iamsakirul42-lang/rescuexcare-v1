@@ -44,6 +44,12 @@ export default function SignupScreen({ navigation, route }) {
       return;
     }
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert('Invalid Phone Number', 'Phone number must be exactly 10 digits and start with 6, 7, 8, or 9.');
+      return;
+    }
+
     setLoading(true);
     try {
       // 1. Sign up user via Supabase Auth
@@ -60,28 +66,17 @@ export default function SignupScreen({ navigation, route }) {
 
       if (error) throw error;
 
-      // 2. Create profile record in public.profiles
-      if (data?.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            role: role,
-            full_name: name,
-            email: email,
-            mobile: phone,
-            city: city
-          });
-
-        if (profileError) throw profileError;
-      }
-
-      // 3. Navigate
-      if (isExpert) {
-        navigation.replace('ExpertOnboarding');
-      } else {
-        navigation.replace('UserSplash');
-      }
+      // 2. We do NOT create the profile yet. We wait until they verify their OTP!
+      // We just navigate to the OTP screen and pass the necessary profile data.
+      navigation.navigate('OtpVerification', {
+        email: email,
+        password: password, // For re-login if needed later, though supabase handles session automatically after OTP verify
+        name: name,
+        phone: phone,
+        city: city,
+        role: role
+      });
+      
     } catch (error) {
       Alert.alert('Signup Error', error.message);
     } finally {
@@ -90,7 +85,7 @@ export default function SignupScreen({ navigation, route }) {
   };
 
   return (
-    <View style={[styles.mainContainer, !isExpert && { backgroundColor: '#FFFFFF' }]}>
+    <View style={[styles.mainContainer, { backgroundColor: '#FFFFFF' }]}>
 
       {/* Background Illustration */}
       <Image
@@ -100,7 +95,7 @@ export default function SignupScreen({ navigation, route }) {
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}
       >
         <LinearGradient
@@ -136,13 +131,7 @@ export default function SignupScreen({ navigation, route }) {
                 <UserIcon width={85} height={85} />
               )}
             </View>
-            {isExpert && (
-              <View style={[styles.roleBadge, styles.expertBadge]}>
-                <Text style={[styles.roleBadgeText, styles.expertBadgeText]}>
-                  EXPERT
-                </Text>
-              </View>
-            )}
+            {/* Expert badge removed per user request */}
             <Text style={styles.headerTitle}>Create Account</Text>
             <Text style={styles.headerSubtitle}>
               {isExpert
@@ -203,8 +192,16 @@ export default function SignupScreen({ navigation, route }) {
                     placeholder="Enter your phone number"
                     placeholderTextColor={theme.colors.textTertiary}
                     value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
+                    onChangeText={(text) => {
+                      const numericText = text.replace(/[^0-9]/g, '');
+                      if (numericText.length === 1 && !/^[6-9]/.test(numericText)) {
+                        Alert.alert('Invalid Number', 'Mobile number must start with 6, 7, 8, or 9.');
+                        return;
+                      }
+                      setPhone(numericText);
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={10}
                   />
                 </View>
               </View>

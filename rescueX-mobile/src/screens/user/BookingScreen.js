@@ -17,6 +17,10 @@ import { theme } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useBooking } from '../../data/bookingStore';
 import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { supabase } from '../../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -105,13 +109,34 @@ export default function BookingScreen({ navigation, route }) {
   const { vehicleType, location } = route.params;
   const config = VEHICLE_CONFIG[vehicleType] || VEHICLE_CONFIG.car;
   const { createBooking } = useBooking();
+  const insets = useSafeAreaInsets();
 
   const [step, setStep] = useState(0);
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [address, setAddress] = useState('');
   const [details, setDetails] = useState('');
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+
+  const loadAddresses = async () => {
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (userId) {
+        const stored = await AsyncStorage.getItem(`user_addresses_${userId}`);
+        if (stored) {
+          setSavedAddresses(JSON.parse(stored));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+    }
+  };
 
   const animateStep = (nextStep) => {
     Animated.sequence([
@@ -143,9 +168,9 @@ export default function BookingScreen({ navigation, route }) {
     }
   };
 
-  const handleBookNow = () => {
+  const handleBookNow = async () => {
     const problemObj = PROBLEMS.find((p) => p.id === selectedProblem);
-    const booking = createBooking({
+    const booking = await createBooking({
       type: 'instant',
       vehicleType,
       vehicleTitle: config.title,
@@ -155,6 +180,28 @@ export default function BookingScreen({ navigation, route }) {
       details,
       paymentMethod: 'cash', // Hardcoded for instant help, will be selectable in categories
     });
+
+    // Save new address if it's not in savedAddresses
+    const isSaved = savedAddresses.some(a => a.fullAddress === address.trim());
+    if (!isSaved && address.trim().length > 0) {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id;
+        if (userId) {
+          const finalAddress = {
+            id: Date.now().toString(),
+            type: 'Other',
+            fullAddress: address.trim(),
+            landmark: ''
+          };
+          const updatedAddresses = [...savedAddresses, finalAddress];
+          await AsyncStorage.setItem(`user_addresses_${userId}`, JSON.stringify(updatedAddresses));
+        }
+      } catch (error) {
+        console.error('Error saving new address:', error);
+      }
+    }
+
     navigation.replace('BookingConfirmed', { bookingId: booking.id });
   };
 
@@ -225,8 +272,54 @@ export default function BookingScreen({ navigation, route }) {
               </View>
             </View>
 
+            {/* Saved Addresses */}
+            {savedAddresses.length > 0 && (
+              <View style={{ marginTop: 24 }}>
+                <Text style={[styles.sectionTitle, { fontSize: 16, marginBottom: 12 }]}>Or choose a saved address</Text>
+                {savedAddresses.map((addr) => (
+                  <TouchableOpacity 
+                    key={addr.id} 
+                    style={[
+                      styles.problemCard, 
+                      { 
+                        minHeight: 70, 
+                        flexDirection: 'row', 
+                        justifyContent: 'flex-start', 
+                        padding: 16, 
+                        marginBottom: 10, 
+                        borderColor: address === addr.fullAddress ? config.color : 'rgba(0,0,0,0.08)',
+                        backgroundColor: address === addr.fullAddress ? config.color + '10' : 'rgba(255,255,255,0.5)'
+                      }
+                    ]}
+                    onPress={() => setAddress(addr.fullAddress)}
+                  >
+                    <View style={[styles.problemIconBox, { 
+                      marginBottom: 0, 
+                      marginRight: 12, 
+                      width: 40, 
+                      height: 40, 
+                      backgroundColor: address === addr.fullAddress ? config.color + '20' : 'rgba(0,0,0,0.04)' 
+                    }]}>
+                      <MaterialCommunityIcons 
+                        name={addr.type === 'Home' ? 'home' : addr.type === 'Work' ? 'office-building' : 'map-marker'} 
+                        size={20} 
+                        color={address === addr.fullAddress ? config.color : '#6B7280'} 
+                      />
+                    </View>
+                    <View style={{ flex: 1, justifyContent: 'center' }}>
+                      <Text style={{ fontFamily: 'Lufga-Bold', fontSize: 14, color: '#1A1A1A' }}>{addr.type || 'Other'}</Text>
+                      <Text style={{ fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 12, color: '#6B7280', marginTop: 2 }} numberOfLines={1}>{addr.fullAddress}</Text>
+                    </View>
+                    {address === addr.fullAddress && (
+                      <MaterialCommunityIcons name="check-circle" size={20} color={config.color} style={{ marginLeft: 8 }} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
             {/* Quick Tips */}
-            <View style={styles.tipsCard}>
+            <View style={[styles.tipsCard, { marginTop: savedAddresses.length > 0 ? 12 : 0 }]}>
               <MaterialCommunityIcons name="lightbulb-outline" size={18} color="#F97316" />
               <Text style={styles.tipsText}>Include building name, floor, and nearby landmark for faster service</Text>
             </View>
@@ -340,16 +433,21 @@ export default function BookingScreen({ navigation, route }) {
     <View style={styles.mainContainer}>
 
       {/* Header */}
-      <View style={styles.headerBar}>
+      <LinearGradient
+        colors={['#ff5e2c', '#e84f21', '#c73e16']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.headerBar, { paddingTop: Math.max(insets.top, 20) + 10 }]}
+      >
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <MaterialCommunityIcons name="arrow-left" size={26} color="#1A1A1A" />
+          <MaterialCommunityIcons name="arrow-left" size={26} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>{stepTitles[step]}</Text>
           <Text style={styles.headerStep}>Step {step + 1} of 4</Text>
         </View>
         <View style={{ width: 40 }} />
-      </View>
+      </LinearGradient>
 
       {/* Step Indicator */}
       <StepIndicator currentStep={step} totalSteps={4} accentColor={config.color} />
@@ -429,16 +527,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 55,
     paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 5,
+    shadowColor: '#ff5e2c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     zIndex: 10,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -449,13 +553,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Lufga-Bold',
     fontWeight: 'normal',
     fontSize: 20,
-    color: '#1A1A1A',
+    color: '#FFFFFF',
   },
   headerStep: {
     fontFamily: 'Lufga-Bold',
     fontWeight: 'normal',
     fontSize: 12,
-    color: '#9CA3AF',
+    color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },
   stepIndicatorContainer: {

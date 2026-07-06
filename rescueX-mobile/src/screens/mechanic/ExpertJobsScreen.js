@@ -7,6 +7,20 @@ import { theme } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useBooking } from '../../data/bookingStore';
 
+const formatAddress = (address) => {
+  if (!address) return 'Unknown Location';
+  if (typeof address === 'object' && address.fullAddress) return address.fullAddress;
+  if (typeof address === 'string') {
+    try {
+      const parsed = JSON.parse(address);
+      if (parsed && parsed.fullAddress) return parsed.fullAddress;
+    } catch(e) {
+      return address;
+    }
+  }
+  return String(address);
+};
+
 export default function ExpertJobsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -19,7 +33,7 @@ export default function ExpertJobsScreen() {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'booking_created': return 'New Booking';
+      case 'waiting_assignment': return 'New Booking';
       case 'expert_assigned': return 'Assigned';
       case 'service_in_progress': return 'In Progress';
       case 'pending_completion_verification': return 'Pending Verification';
@@ -52,9 +66,14 @@ export default function ExpertJobsScreen() {
         <View style={styles.jobHeader}>
           <View style={{ flex: 1 }}>
             <Text style={styles.jobTitle}>
-              {item.services?.map(s => s.name).join(', ') || 'Service'}
+              {(item.services && item.services.length > 0) ? item.services.map(s => s.name).join(', ') : (item.problem || 'Service')}
             </Text>
-            <Text style={styles.jobId}>ID: {item.id}</Text>
+            <Text style={styles.jobId} numberOfLines={1} ellipsizeMode="middle">ID: {item.id}</Text>
+            {item.address && (
+              <Text style={styles.jobAddress} numberOfLines={2}>
+                <MaterialCommunityIcons name="map-marker" size={12} color="#6B7280" /> {formatAddress(item.address)}
+              </Text>
+            )}
           </View>
           <Text style={styles.jobEarnings}>₹{item.totalAmount || 0}</Text>
         </View>
@@ -136,6 +155,7 @@ const styles = StyleSheet.create({
   },
   jobTitle: { fontFamily: 'Lufga-Bold', fontSize: 16, color: theme.colors.textPrimary, flex: 1 },
   jobId: { fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  jobAddress: { fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 13, color: '#6B7280', marginTop: 4 },
   jobEarnings: { fontFamily: 'Lufga-Bold', fontSize: 16, color: theme.colors.success || '#22C55E', marginLeft: 12 },
   jobFooter: {
     flexDirection: 'row',

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useBooking } from '../../data/bookingStore';
+import { supabase } from '../../lib/supabase';
 
 const formatDuration = (seconds) => {
   const h = Math.floor(seconds / 3600);
@@ -41,6 +42,58 @@ export default function UserBookingDetailsScreen() {
     }
   }, [booking.status, booking.serviceStartTime]);
 
+  // Fallback Polling (Bypasses Realtime RLS Replica Identity issue)
+  useEffect(() => {
+    let pollInterval;
+    if (!['booking_completed', 'cancelled'].includes(booking.status)) {
+      pollInterval = setInterval(async () => {
+        try {
+          const { data } = await supabase
+            .from('bookings')
+            .select('status, service_start_time, service_end_time, expert_id')
+            .eq('id', booking.id)
+            .neq('notes', Date.now().toString()) // Cache buster for React Native
+            .single();
+            
+          if (data) {
+            let expertData = null;
+            
+            // If the database has an expert assigned, but our local state doesn't have the full details yet
+            if (data.expert_id && !booking.expert) {
+              const { data: mechanic } = await supabase
+                .from('mechanics')
+                .select('*')
+                .eq('id', data.expert_id)
+                .single();
+                
+              if (mechanic) {
+                expertData = {
+                  name: mechanic.name,
+                  phone: mechanic.phone,
+                  vehicleTypes: mechanic.vehicle_types || [],
+                  specialization: mechanic.services ? mechanic.services.join(', ') : 'General Service',
+                  experience: (mechanic.experience_years || 0) + ' Years',
+                  rating: mechanic.rating || 4.8
+                };
+              }
+            }
+
+            if (data.status !== booking.status || expertData) {
+              updateBookingStatus(booking.id, data.status, {
+                serviceStartTime: data.service_start_time,
+                serviceEndTime: data.service_end_time,
+                ...(expertData ? { expert: expertData } : {})
+              });
+            }
+          }
+        } catch (err) {
+          console.log('Polling error:', err);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(pollInterval);
+  }, [booking.status, booking.id]);
+
   // Calculate final duration for completed bookings
   const getFinalDuration = () => {
     if (booking.serviceStartTime && booking.serviceEndTime) {
@@ -53,7 +106,8 @@ export default function UserBookingDetailsScreen() {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'booking_created': return 'Booking Created';
+      case 'pending': return 'Pending';
+      case 'waiting_assignment': return 'Waiting for Assignment';
       case 'expert_assigned': return 'Expert Assigned';
       case 'service_in_progress': return 'Service In Progress';
       case 'pending_completion_verification': return 'Pending Verification';
@@ -71,7 +125,7 @@ export default function UserBookingDetailsScreen() {
     return '#ff5e2c';
   };
 
-  const isCancelable = ['booking_created', 'expert_assigned'].includes(booking.status);
+  const isCancelable = ['pending', 'waiting_assignment', 'expert_assigned'].includes(booking.status);
 
   const handleCancel = () => {
     Alert.alert(
@@ -109,6 +163,78 @@ export default function UserBookingDetailsScreen() {
     });
   };
 
+  const TrackingTimeline = () => {
+    const statusMap = {
+      'pending': 1,
+      'waiting_assignment': 2,
+      'expert_assigned': 2, // Stays at step 2 until expert presses I Am Ready
+      'expert_on_way': 3,
+      'service_in_progress': 5,
+      'pending_completion_verification': 6,
+      'booking_completed': 7,
+    };
+    
+    const isCancelled = booking.status === 'cancelled';
+    
+    let step = statusMap[booking.status] || 1;
+    if (isCancelled) {
+      if (booking.serviceStartTime) step = 5;
+      else if (booking.expert) step = 2;
+      else step = 2; 
+    }
+
+    const renderStep = (stepNumber, title, subtitle, isLast = false) => {
+      const isActive = step >= stepNumber;
+      const isCurrentCancelStep = isCancelled && step === stepNumber;
+      
+      const dotColor = isCurrentCancelStep ? '#EF4444' : (isActive ? '#22C55E' : '#F3F4F6');
+      const lineColor = (isActive && !isCurrentCancelStep) ? '#22C55E' : '#E5E7EB';
+      const iconColor = (isCurrentCancelStep || isActive) ? '#FFF' : '#D1D5DB';
+      
+      return (
+        <View style={{ flexDirection: 'row', marginBottom: isLast ? 0 : 24 }}>
+          <View style={{ alignItems: 'center', marginRight: 16 }}>
+            <View style={{
+              width: 28, height: 28, borderRadius: 14, 
+              backgroundColor: dotColor,
+              justifyContent: 'center', alignItems: 'center'
+            }}>
+              <MaterialCommunityIcons name={isCurrentCancelStep ? "close" : "check"} size={16} color={iconColor} />
+            </View>
+            {!isLast && (
+              <View style={{ width: 2, height: 40, backgroundColor: lineColor, marginTop: 4 }} />
+            )}
+          </View>
+          <View style={{ flex: 1, paddingTop: 2 }}>
+            <Text style={{ fontFamily: 'Lufga-Bold', fontSize: 16, color: (isActive || isCurrentCancelStep) ? '#1A1A1A' : '#9CA3AF' }}>
+              {isCurrentCancelStep ? 'Booking Cancelled' : title}
+            </Text>
+            {(isActive || isCurrentCancelStep) && subtitle && (
+              <Text style={{ fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 13, color: '#6B7280', marginTop: 4 }}>
+                {isCurrentCancelStep ? 'This booking was cancelled.' : subtitle}
+              </Text>
+            )}
+          </View>
+        </View>
+      );
+    };
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Booking Tracker</Text>
+        <View style={{ marginTop: 10 }}>
+          {renderStep(1, 'Booking Confirmed', 'Booking has been successfully received.')}
+          {renderStep(2, 'RescueX Team Reviewing', 'Your booking is being processed.')}
+          {renderStep(3, 'Expert Is Coming', 'Your RescueX expert is on the way.')}
+          {renderStep(4, 'Verify Start OTP', 'Share OTP with expert to begin service.')}
+          {renderStep(5, 'Service In Progress', 'Service timer is active.')}
+          {renderStep(6, 'Verify Completion OTP', 'Share OTP only when satisfied.')}
+          {renderStep(7, 'Booking Completed', 'Service successfully finished.', true)}
+        </View>
+      </View>
+    );
+  };
+
   // ─── COMPLETED VIEW ────────────────────────────────
   if (booking.status === 'booking_completed') {
     const duration = getFinalDuration();
@@ -139,7 +265,7 @@ export default function UserBookingDetailsScreen() {
 
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Booking ID</Text>
-              <Text style={styles.infoValue}>{booking.id}</Text>
+              <Text style={[styles.infoValue, { flex: 1, textAlign: 'right', marginLeft: 20 }]} numberOfLines={2}>{booking.id}</Text>
             </View>
 
             {duration && (
@@ -157,8 +283,8 @@ export default function UserBookingDetailsScreen() {
             )}
 
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Date</Text>
-              <Text style={styles.infoValue}>{booking.scheduledDate}</Text>
+              <Text style={styles.infoLabel}>{booking.type === 'instant' ? 'Booking Type' : 'Date'}</Text>
+              <Text style={styles.infoValue}>{booking.type === 'instant' ? 'Instant Request' : booking.scheduledDate}</Text>
             </View>
 
             <View style={styles.infoRow}>
@@ -168,23 +294,32 @@ export default function UserBookingDetailsScreen() {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Services</Text>
-            {booking.services && booking.services.map((svc, i) => (
-              <View key={i} style={styles.serviceRow}>
-                <Text style={styles.serviceName}>{svc.quantity}x {svc.name}</Text>
-                <Text style={styles.servicePrice}>₹{svc.price * svc.quantity}</Text>
+            <Text style={styles.sectionTitle}>{booking.type === 'instant' ? 'Problem Details' : 'Services'}</Text>
+            {booking.type === 'instant' ? (
+              <View style={styles.serviceRow}>
+                <Text style={styles.serviceName}>{booking.vehicleTitle} - {booking.problem}</Text>
+                <Text style={styles.servicePrice}>TBD</Text>
               </View>
-            ))}
+            ) : (
+              booking.services && booking.services.map((svc, i) => (
+                <View key={i} style={styles.serviceRow}>
+                  <Text style={styles.serviceName}>{svc.quantity}x {svc.name}</Text>
+                  <Text style={styles.servicePrice}>₹{svc.price * svc.quantity}</Text>
+                </View>
+              ))
+            )}
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>₹{booking.totalAmount || 0}</Text>
+              <Text style={styles.totalValue}>{booking.type === 'instant' ? 'TBD' : `₹${booking.totalAmount || 0}`}</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.primaryButton} onPress={handleRateExpert}>
-            <MaterialCommunityIcons name="star-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.primaryButtonText}>Rate Expert</Text>
-          </TouchableOpacity>
+          {(booking.rating === undefined || booking.rating === null) && (
+            <TouchableOpacity style={styles.primaryButton} onPress={handleRateExpert}>
+              <MaterialCommunityIcons name="star-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.primaryButtonText}>Rate Expert</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={styles.secondaryButton} onPress={handleReturnHome}>
             <Text style={styles.secondaryButtonText}>Return Home</Text>
@@ -210,13 +345,16 @@ export default function UserBookingDetailsScreen() {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Scheduled Booking Tracking Timeline */}
+        {booking.type !== 'instant' && <TrackingTimeline />}
+
         {/* Booking Info Card */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Booking Info</Text>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Booking ID</Text>
-            <Text style={styles.infoValue}>{booking.id}</Text>
+            <Text style={[styles.infoValue, { flex: 1, textAlign: 'right', marginLeft: 20 }]} numberOfLines={2}>{booking.id}</Text>
           </View>
           
           <View style={styles.infoRow}>
@@ -228,7 +366,30 @@ export default function UserBookingDetailsScreen() {
             </View>
           </View>
 
-          {booking.vehicleId && (
+          {/* Expert Details (visible after dispatch) */}
+          {booking.expert && !['pending', 'waiting_assignment'].includes(booking.status) && (
+            <>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Assigned Expert</Text>
+                <Text style={styles.infoValue}>{booking.expert.name}</Text>
+              </View>
+              {booking.expert.phone && (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Expert Contact</Text>
+                  <Text style={styles.infoValue}>{booking.expert.phone}</Text>
+                </View>
+              )}
+              {booking.expert.vehicleTypes && booking.expert.vehicleTypes.length > 0 && (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Expertise</Text>
+                  <Text style={styles.infoValue}>{booking.expert.vehicleTypes.join(', ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                </View>
+              )}
+            </>
+          )}
+
+          {/* Do not show vehicle details for scheduled bookings as per user request */}
+          {booking.vehicleId && booking.type === 'instant' && (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Vehicle</Text>
               <Text style={styles.infoValue}>{booking.vehicleId?.charAt(0).toUpperCase() + booking.vehicleId?.slice(1)}</Text>
@@ -236,11 +397,11 @@ export default function UserBookingDetailsScreen() {
           )}
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Scheduled Date</Text>
-            <Text style={styles.infoValue}>{booking.scheduledDate}</Text>
+            <Text style={styles.infoLabel}>{booking.type === 'instant' ? 'Booking Type' : 'Scheduled Date'}</Text>
+            <Text style={styles.infoValue}>{booking.type === 'instant' ? 'Instant Request' : booking.scheduledDate}</Text>
           </View>
           
-          {booking.scheduledTime && (
+          {booking.scheduledTime && booking.type !== 'instant' && (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Scheduled Time</Text>
               <Text style={styles.infoValue}>{booking.scheduledTime}</Text>
@@ -251,7 +412,7 @@ export default function UserBookingDetailsScreen() {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Address</Text>
               <Text style={[styles.infoValue, { flex: 1, textAlign: 'right', marginLeft: 20 }]} numberOfLines={3}>
-                {booking.address.fullAddress}
+                {booking.address.fullAddress || booking.address}
               </Text>
             </View>
           )}
@@ -264,16 +425,23 @@ export default function UserBookingDetailsScreen() {
 
         {/* Services Card */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          {booking.services && booking.services.map((svc, i) => (
-            <View key={i} style={styles.serviceRow}>
-              <Text style={styles.serviceName}>{svc.quantity}x {svc.name}</Text>
-              <Text style={styles.servicePrice}>₹{svc.price * svc.quantity}</Text>
+          <Text style={styles.sectionTitle}>{booking.type === 'instant' ? 'Problem Details' : 'Services'}</Text>
+          {booking.type === 'instant' ? (
+            <View style={styles.serviceRow}>
+              <Text style={styles.serviceName}>{booking.vehicleTitle} - {booking.problem}</Text>
+              <Text style={styles.servicePrice}>TBD</Text>
             </View>
-          ))}
+          ) : (
+            booking.services && booking.services.map((svc, i) => (
+              <View key={i} style={styles.serviceRow}>
+                <Text style={styles.serviceName}>{svc.quantity}x {svc.name}</Text>
+                <Text style={styles.servicePrice}>₹{svc.price * svc.quantity}</Text>
+              </View>
+            ))
+          )}
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>₹{booking.totalAmount || 0}</Text>
+            <Text style={styles.totalValue}>{booking.type === 'instant' && !booking.totalAmount ? 'TBD' : `₹${booking.totalAmount || 0}`}</Text>
           </View>
         </View>
 
@@ -290,7 +458,7 @@ export default function UserBookingDetailsScreen() {
         )}
 
         {/* ─── START VERIFICATION CODE ─── */}
-        {['booking_created', 'expert_assigned'].includes(booking.status) && booking.startCode && (
+        {['waiting_assignment', 'expert_assigned', 'expert_on_way'].includes(booking.status) && booking.startCode && (
           <View style={styles.otpCard}>
             <Text style={styles.otpLabel}>Start Verification Code</Text>
             <View style={styles.otpDigitsRow}>

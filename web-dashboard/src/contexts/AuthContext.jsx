@@ -7,17 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const hasSupabase = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
-
   useEffect(() => {
-    if (!hasSupabase) {
-      // Mock user if Supabase is not configured
-      const mockedUser = localStorage.getItem('mock_user') ? { id: '1', email: 'admin@rescuex.in' } : null;
-      setUser(mockedUser);
-      setLoading(false);
-      return;
-    }
-
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -31,26 +21,24 @@ export function AuthProvider({ children }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [hasSupabase]);
+  }, []);
 
   const value = {
-    signUp: (data) => hasSupabase ? supabase.auth.signUp(data) : Promise.resolve({ data: { user: { id: '1' } }, error: null }),
-    signIn: async (data) => {
-      if (!hasSupabase) {
-        localStorage.setItem('mock_user', 'true');
-        setUser({ id: '1', email: data.email });
-        return { data: { user: { id: '1', email: data.email } }, error: null };
-      }
-      return supabase.auth.signInWithPassword(data);
+    // Standard Login
+    login: async (email, password) => {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data;
     },
-    signOut: () => {
-      if (!hasSupabase) {
-        localStorage.removeItem('mock_user');
-        setUser(null);
-        return Promise.resolve();
-      }
-      return supabase.auth.signOut();
+    resetPassword: (email) => {
+      return supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
     },
+    updatePassword: (newPassword) => {
+      return supabase.auth.updateUser({ password: newPassword });
+    },
+    signOut: () => supabase.auth.signOut(),
     user,
   };
 
@@ -64,3 +52,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+

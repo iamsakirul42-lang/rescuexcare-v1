@@ -1,3 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../lib/supabase';
+
 export const categoriesMarketplace = {
   vehicles: [
     {
@@ -660,4 +663,93 @@ export const categoriesMarketplace = {
       ]
     }
   ]
+};
+
+const listeners = [];
+
+export const onPricingUpdated = (callback) => {
+  listeners.push(callback);
+  return () => {
+    const index = listeners.indexOf(callback);
+    if (index > -1) listeners.splice(index, 1);
+  };
+};
+
+const notifyListeners = () => {
+  listeners.forEach(cb => cb());
+};
+
+let isSubscribed = false;
+
+export const syncServicePricing = async () => {
+  try {
+    // 1. Load from cache first for immediate UI updates
+    const cached = await AsyncStorage.getItem('service_pricing_cache');
+    if (cached) {
+      applyPricingUpdate(JSON.parse(cached));
+      notifyListeners();
+    }
+    
+    // 2. Fetch fresh from DB
+    const { data, error } = await supabase.from('service_pricing').select('*');
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      applyPricingUpdate(data);
+      notifyListeners();
+      await AsyncStorage.setItem('service_pricing_cache', JSON.stringify(data));
+    }
+
+    // 3. Subscribe to real-time changes
+    if (!isSubscribed) {
+      isSubscribed = true;
+      supabase
+        .channel('public:service_pricing')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'service_pricing' }, async () => {
+          const { data: freshData } = await supabase.from('service_pricing').select('*');
+          if (freshData && freshData.length > 0) {
+            applyPricingUpdate(freshData);
+            notifyListeners();
+            await AsyncStorage.setItem('service_pricing_cache', JSON.stringify(freshData));
+          }
+        })
+        .subscribe();
+    }
+  } catch (err) {
+    console.log('Failed to sync service pricing', err);
+  }
+};
+
+const applyPricingUpdate = (pricingData) => {
+  const pricingMap = {};
+  pricingData.forEach(p => {
+    pricingMap[p.service_id] = p;
+  });
+
+  categoriesMarketplace.vehicles.forEach(vehicle => {
+    vehicle.sections.forEach(section => {
+      section.services.forEach(service => {
+        const p = pricingMap[service.id];
+        if (p) {
+          service.price = p.base_price;
+          service.isQuote = p.pricing_type === 'quote';
+          service.isHidden = p.is_active === false; // Hide inactive services
+          service.displayOrder = p.display_order || 0;
+          
+          if (p.estimated_duration_minutes) {
+             const hrs = Math.floor(p.estimated_duration_minutes / 60);
+             const mins = p.estimated_duration_minutes % 60;
+             if (hrs > 0 && mins === 0) service.duration = `${hrs} hr${hrs > 1 ? 's' : ''}`;
+             else if (hrs > 0) service.duration = `${hrs} hr ${mins} min`;
+             else service.duration = `${mins} mins`;
+          }
+        } else if (service.displayOrder === undefined) {
+          service.displayOrder = 999;
+        }
+      });
+
+      // Sort services based on displayOrder
+      section.services.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    });
+  });
 };

@@ -45,9 +45,18 @@ export default function CheckoutSummaryScreen() {
         <View style={styles.summaryCard}>
           <View style={styles.cardHeader}>
             <MaterialCommunityIcons name="calendar-clock" size={20} color="#ff5e2c" />
-            <Text style={styles.cardTitle}>Schedule</Text>
+            <Text style={styles.cardTitle}>Schedule Details</Text>
           </View>
-          <Text style={styles.cardText}>{date} at {time}</Text>
+          <View style={styles.detailsTable}>
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailsLabel}>Date:</Text>
+              <Text style={styles.detailsValue}>{date}</Text>
+            </View>
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailsLabel}>Time:</Text>
+              <Text style={styles.detailsValue}>{time}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Address Info */}
@@ -56,8 +65,22 @@ export default function CheckoutSummaryScreen() {
             <MaterialCommunityIcons name="map-marker" size={20} color="#ff5e2c" />
             <Text style={styles.cardTitle}>Service Address</Text>
           </View>
-          <Text style={styles.cardText}>{address?.fullAddress}</Text>
-          {address?.landmark ? <Text style={styles.subText}>Landmark: {address.landmark}</Text> : null}
+          <View style={styles.detailsTable}>
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailsLabel}>Type:</Text>
+              <Text style={styles.detailsValue}>{address?.type || 'Other'}</Text>
+            </View>
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailsLabel}>Location:</Text>
+              <Text style={styles.detailsValue}>{address?.fullAddress}</Text>
+            </View>
+            {address?.landmark ? (
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Landmark:</Text>
+                <Text style={styles.detailsValue}>{address.landmark}</Text>
+              </View>
+            ) : null}
+          </View>
         </View>
 
         {/* Services Info */}
@@ -137,11 +160,15 @@ const styles = StyleSheet.create({
   cardTitle: { fontFamily: 'Lufga-Bold', fontSize: 16, color: '#1A1A1A', marginLeft: 8 },
   cardText: { fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 15, color: '#4B5563', lineHeight: 22 },
   subText: { fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 13, color: '#9CA3AF', marginTop: 4 },
-  serviceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  serviceRowLeft: { flexDirection: 'row', flex: 1, paddingRight: 12 },
-  serviceQty: { fontFamily: 'Lufga-Bold', fontSize: 15, color: '#ff5e2c', marginRight: 8 },
-  serviceName: { fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 15, color: '#4B5563' },
-  servicePrice: { fontFamily: 'Lufga-Bold', fontSize: 15, color: '#1A1A1A' },
+  detailsTable: { marginTop: 4 },
+  detailsRow: { flexDirection: 'row', marginBottom: 8, alignItems: 'flex-start' },
+  detailsLabel: { width: 80, fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 14, color: '#9CA3AF', marginTop: 2 },
+  detailsValue: { flex: 1, fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 14, color: '#4B5563', lineHeight: 20 },
+  serviceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'flex-start' },
+  serviceRowLeft: { flexDirection: 'row', flex: 1, paddingRight: 12, alignItems: 'flex-start' },
+  serviceQty: { fontFamily: 'Lufga-Bold', fontSize: 15, color: '#ff5e2c', marginRight: 8, marginTop: 1 },
+  serviceName: { flex: 1, fontFamily: 'Lufga-Bold', fontWeight: 'normal', fontSize: 15, color: '#4B5563', lineHeight: 22 },
+  servicePrice: { fontFamily: 'Lufga-Bold', fontSize: 15, color: '#1A1A1A', marginTop: 1 },
   billingSection: {
     backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginTop: 8,
     borderWidth: 1, borderColor: '#F3F4F6'

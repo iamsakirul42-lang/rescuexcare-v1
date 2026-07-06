@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  SafeAreaView, ScrollView, KeyboardAvoidingView, Platform,
+  ScrollView, KeyboardAvoidingView, Platform,
   Dimensions, Alert, Image, Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../theme';
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
-import HeroBackground from '../../components/HeroBackground';
+import UserIcon from '../../components/UserIcon';
 import { supabase } from '../../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
@@ -19,6 +21,7 @@ export default function LoginScreen({ navigation, route }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -35,11 +38,26 @@ export default function LoginScreen({ navigation, route }) {
 
       if (error) throw error;
 
-      // TODO: Fetch profile to verify role, but for now just navigate based on the route role
+      // Determine role logic
       if (isExpert) {
-        navigation.replace('MechanicSplash');
+        const { data: profile, error: profileError } = await supabase
+          .from('mechanics')
+          .select('kyc_status')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          // If no profile exists, they haven't finished onboarding
+          navigation.replace('ExpertOnboarding');
+        } else if (profile.kyc_status === 'pending' || profile.kyc_status === 'rejected') {
+          // Under review or rejected
+          navigation.replace('PendingDashboard');
+        } else {
+          // Approved
+          navigation.replace('MechanicSplash');
+        }
       } else {
-        navigation.replace('UserSplash');
+        navigation.replace('UserSplash', { isLogin: true });
       }
     } catch (error) {
       Alert.alert('Login Error', error.message);
@@ -49,10 +67,7 @@ export default function LoginScreen({ navigation, route }) {
   };
 
   return (
-    <View style={[styles.mainContainer, !isExpert && { backgroundColor: '#FFFFFF' }]}>
-      {/* Hero Background - green for user, orange for expert */}
-      <HeroBackground variant={isExpert ? 'orange' : 'green'} heightPercent={0.28} />
-
+    <View style={[styles.mainContainer, { backgroundColor: '#FFFFFF' }]}>
       {/* Background Illustration */}
       <Image
         source={require('../../../assets/images/kolkata-art-transparent.png')}
@@ -60,14 +75,19 @@ export default function LoginScreen({ navigation, route }) {
         resizeMode="cover"
       />
 
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardView}
+      >
+        <LinearGradient
+          colors={isExpert 
+            ? [theme.colors.expertPrimary, '#4C1D95', '#2E1065'] 
+            : ['#ff5e2c', '#e84f21', '#c73e16']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.fixedHeader, { paddingTop: Math.max(insets.top, 20) + 10 }]}
         >
-          {/* Fixed Header Section */}
-          <View style={styles.fixedHeader}>
-            {/* Back Button */}
+          <View style={styles.headerTopRow}>
             <TouchableOpacity 
               style={styles.backBtn} 
               activeOpacity={0.7}
@@ -76,28 +96,28 @@ export default function LoginScreen({ navigation, route }) {
                 setTimeout(() => navigation.goBack(), 50);
               }}
             >
-              <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.textPrimary} />
+              <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
             </TouchableOpacity>
+          </View>
 
-            {/* Header */}
-            <View style={styles.header}>
-              {/* Role Icon */}
-              <View style={[styles.roleIconCircle, isExpert ? styles.expertIconCircle : styles.userIconCircle]}>
+          <View style={styles.header}>
+            <View style={[styles.roleIconCircle, isExpert ? styles.expertIconCircle : styles.userIconCircle]}>
+              {isExpert ? (
                 <Image
-                  source={isExpert ? require('../../../assets/images/expert-icon.png') : require('../../../assets/images/user-icon.png')}
+                  source={require('../../../assets/images/expert-icon.png')}
                   style={styles.customIcon}
                   resizeMode="contain"
                 />
-              </View>
-              <View style={[styles.roleBadge, isExpert ? styles.expertBadge : styles.userBadge]}>
-                <Text style={[styles.roleBadgeText, isExpert ? styles.expertBadgeText : styles.userBadgeText]}>
-                  {isExpert ? 'EXPERT' : 'USER'}
-                </Text>
-              </View>
-              <Text style={styles.headerTitle}>Welcome Back</Text>
-              <Text style={styles.headerSubtitle}>Log in to your account</Text>
+              ) : (
+                <UserIcon width={85} height={85} />
+              )}
             </View>
+            <Text style={styles.headerTitle}>Welcome Back</Text>
+            <Text style={styles.headerSubtitle}>
+              Log in to your account
+            </Text>
           </View>
+        </LinearGradient>
 
           <ScrollView
             contentContainerStyle={styles.scrollContent}
@@ -175,7 +195,6 @@ export default function LoginScreen({ navigation, route }) {
             </View>
           </View>
         </KeyboardAvoidingView>
-      </SafeAreaView>
     </View>
   );
 }
@@ -197,17 +216,25 @@ const styles = StyleSheet.create({
     zIndex: 0,
     transform: [{ scale: 1.15 }],
   },
-  safeArea: {
-    flex: 1,
-    zIndex: 10,
-  },
   keyboardView: {
     flex: 1,
   },
   fixedHeader: {
     paddingHorizontal: 24,
-    paddingTop: Platform.OS === 'ios' ? 10 : 40,
-    paddingBottom: 10,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    marginBottom: 10,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -220,15 +247,8 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 24 : 32,
   },
   backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
+    padding: 8,
+    marginLeft: -8,
   },
   logoContainer: {
     alignItems: 'center',
@@ -256,42 +276,19 @@ const styles = StyleSheet.create({
     height: 60,
   },
   userIconCircle: {
-    backgroundColor: theme.colors.successLight,
+    backgroundColor: 'transparent',
   },
   expertIconCircle: {
-    backgroundColor: theme.colors.accentLight,
-  },
-  roleBadge: {
-    paddingVertical: 5,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    marginBottom: 12,
-  },
-  userBadge: {
-    backgroundColor: theme.colors.successLight,
-  },
-  expertBadge: {
-    backgroundColor: theme.colors.accentLight,
-  },
-  roleBadgeText: {
-    ...theme.typography.small,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-  },
-  userBadgeText: {
-    color: theme.colors.success,
-  },
-  expertBadgeText: {
-    color: theme.colors.accent,
+    backgroundColor: 'rgba(255,255,255,0.7)',
   },
   headerTitle: {
     ...theme.typography.h1,
-    color: theme.colors.textPrimary,
+    color: '#FFF',
     marginBottom: 6,
   },
   headerSubtitle: {
     ...theme.typography.body,
-    color: theme.colors.textSecondary,
+    color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
   },
   form: {
@@ -352,7 +349,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   userBtn: {
-    backgroundColor: theme.colors.success,
+    backgroundColor: '#ff5e2c',
   },
   expertBtn: {
     backgroundColor: theme.colors.accent,

@@ -80,7 +80,7 @@ export default function CategoriesScreen() {
             const matchesMode = isEvMode ? sec.id.includes('_ev_') : sec.id.includes('_cng_');
             if (!matchesMode) return;
           }
-          sec.services.forEach(svc => {
+          sec.services.filter(s => !s.isHidden).forEach(svc => {
             if (
               svc.name.toLowerCase().includes(lowerQuery) || 
               (svc.includes && svc.includes.some(inc => inc.toLowerCase().includes(lowerQuery))) ||
@@ -94,7 +94,7 @@ export default function CategoriesScreen() {
       }).filter(res => res && res.services.length > 0)
     : [];
 
-  const { cart, addToCart, removeFromCart, updateQuantity, clearCart, cartVehicleId, cartTotal } = useBooking();
+  const { cart, addToCart, removeFromCart, updateQuantity, clearCart, cartVehicleId, cartTotal, pricingTick } = useBooking();
 
   const handleAddService = (service, vehicleId) => {
     if (cart.length > 0 && cartVehicleId !== vehicleId) {
@@ -324,7 +324,7 @@ export default function CategoriesScreen() {
               .map((section) => (
                 <View key={section.id} style={styles.sectionContainer}>
                   <Text style={styles.sectionTitle}>{section.title}</Text>
-                  {section.services.map(service => renderServiceCard(service, activeVehicleId))}
+                  {section.services.filter(s => !s.isHidden).map(service => renderServiceCard(service, activeVehicleId))}
                 </View>
               ))}
           </View>
